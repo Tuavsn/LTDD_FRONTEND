@@ -29,42 +29,47 @@ const LoginScreen = () => {
   };
 
   const handleRegisterClick = () => router.navigate('/(auth)/(register)');
+  const handleForgotPasswordClick = () => router.navigate('/(auth)/(reset-password)');
 
   return (
     <ImageBackground
       source={require('@/assets/images/login-background.png')}
-      style={styles.background}
+      className='flex-1 flex justify-center h-full w-full'
     >
-      <View style={styles.backgroundContainer}>
-
-        <SafeAreaView style={styles.container} >
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>{strings.login.labels.title}</Text>
+      <View className='flex-1 flex self-center w-full'>
+        <SafeAreaView className='flex flex-1 flex-col justify-center self-center p-5 w-[80%]' >
+          <View className='mb-4 flex content-center items-center bg-[rgba(255,255,255,0.8)] p-4 w-min'>
+            <Text className='text-[32px] font-bold w-min'>{strings.login.labels.title}</Text>
           </View>
-          <TextInput
-            label={strings.login.labels.email}
-            value={email}
-            onChangeText={setEmail}
-            mode="outlined"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={styles.input}
-          />
-          <TextInput
-            label={strings.login.labels.password}
-            value={password}
-            onChangeText={setPassword}
-            mode="outlined"
-            secureTextEntry
-            style={styles.input}
-            onSubmitEditing={handleLogin}
-          />
+          <View className='mb-4'>
+            <TextInput
+              label={strings.login.labels.email}
+              value={email}
+              onChangeText={setEmail}
+              mode="outlined"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+          <View className='mb-4'>
+            <TextInput
+              label={strings.login.labels.password}
+              value={password}
+              onChangeText={setPassword}
+              mode="outlined"
+              secureTextEntry
+              onSubmitEditing={handleLogin}
+            />
+          </View>
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button mode="contained" onPress={handleLogin} style={styles.button}>
+          <Button mode="contained" onPress={handleLogin} className='mt-[10px] bg-cyan-400'>
             {strings.login.labels.login}
           </Button>
-          <Button onPress={handleRegisterClick}>
+          <Button onPress={handleRegisterClick} className='mt-[14px]'>
             {strings.login.texts.navigateRegister}
+          </Button>
+          <Button onPress={handleForgotPasswordClick} className='mt-[6px]'>
+            {strings.login.texts.navigateForgotPassword}
           </Button>
         </SafeAreaView>
       </View>
@@ -76,7 +81,6 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    flex: 1,
     justifyContent: 'center',
     maxWidth: width * 0.8,
     padding: 20
