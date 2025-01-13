@@ -18,10 +18,12 @@ const LoginScreen = () => {
       return;
     }
     setError('');
-    api.post('/auth/login', { email, password }, false).then((res) => {
+    api.post<{ suggestEnterOtp: boolean | undefined }>('/auth/login', { email, password }, false).then((res) => {
       if (res.success) {
         router.navigate('/(tabs)');
       } else {
+        if (res.data?.suggestEnterOtp)
+          router.navigate({ pathname: '/(auth)/(register)/confirm-otp', params: { email } });
         setError(res.message || strings.login.errors.error);
       }
     });
@@ -29,7 +31,7 @@ const LoginScreen = () => {
   };
 
   const handleRegisterClick = () => router.navigate('/(auth)/(register)');
-  const handleForgotPasswordClick = () => router.navigate('/(auth)/(reset-password)');
+  const handleForgotPasswordClick = () => router.navigate('/(auth)/(forgot-password)');
 
   return (
     <ImageBackground

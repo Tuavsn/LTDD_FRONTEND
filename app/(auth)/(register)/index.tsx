@@ -4,11 +4,13 @@ import { TextInput, Button, Text } from 'react-native-paper';
 import { strings } from "@/constants/String";
 import { api } from "@/utils/restApiUtil";
 import { router } from "expo-router";
+import { useToast } from "@/components/SimpleToastProvider";
 
 export default function RegisterScreen() {
-
+  const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [fullname, setFullname] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,18 +20,18 @@ export default function RegisterScreen() {
     const phoneRegex = /^[0-9]{10}$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-    if (!email || !phone || !password || !confirmPassword) {
+    if (!email || !phone || !fullname || !password || !confirmPassword) {
       setError(strings.register.errors.fullInformationRequired);
       return;
     }
 
     if (!emailRegex.test(email)) {
-      setError(strings.register.errors.error);
+      setError(strings.register.errors.emailInvalid);
       return;
     }
 
     if (!phoneRegex.test(phone)) {
-      setError(strings.register.errors.error);
+      setError(strings.register.errors.phoneInvalid);
       return;
     }
 
@@ -43,17 +45,15 @@ export default function RegisterScreen() {
 
   const handleRegister = () => {
 
-    // validateData();
+    validateData();
 
-    // api.post('/auth/register', { email, phone, password, confirmPassword }, false).then((res) => {
-    //   if (res.success) {
-    //     router.navigate('/(tabs)');
-    //   } else {
-    //     setError(res.message || strings.register.errors.error);
-    //   }
-    // });
-
-    router.navigate('/(auth)/(register)/confirm-otp');
+    api.post('/auth/register', { email, phone, fullname, password }, false).then((res) => {
+      if (res.success) {
+        router.push({ pathname: '/(auth)/(register)/confirm-otp', params: { email } });
+      } else {
+        showToast(res.message || strings.register.errors.error, 2000);
+      }
+    });
   }
 
   const handleLoginClick = () => {
@@ -91,6 +91,15 @@ export default function RegisterScreen() {
               onChangeText={setPhone}
               mode="outlined"
               keyboardType="phone-pad"
+            />
+          </View>
+
+          <View className='mb-4'>
+            <TextInput
+              label={strings.register.labels.fullname}
+              value={fullname}
+              onChangeText={setFullname}
+              mode="outlined"
             />
           </View>
 

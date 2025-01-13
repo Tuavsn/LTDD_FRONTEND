@@ -33,7 +33,7 @@ async function request<T>(
   };
 
   try {
-    console.log("API Request:", method, `${API_URL}${endpoint}`, body);
+    console.log("API Request:", method, `${endpoint}`, body);
     const response = await fetch(`${API_URL}${endpoint}`, options);
 
     // Nếu token hết hạn, thử refresh
@@ -45,6 +45,7 @@ async function request<T>(
     }
 
     const data = await response.json();
+    console.log("API Response:", response.status, data);
     return { success: response.ok, data, message: data?.message };
   } catch (error) {
     console.error("API Request Error:", error);

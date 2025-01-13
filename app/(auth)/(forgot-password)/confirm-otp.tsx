@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { Dimensions, ImageBackground, SafeAreaView, StyleSheet, View } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { strings } from '@/constants/String';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { useToast } from '@/components/SimpleToastProvider';
+import { useLocalSearchParams } from 'expo-router/build/hooks';
 import { api } from '@/utils/restApiUtil';
 const background = require('@/assets/images/login-background.png')
 
@@ -11,18 +12,17 @@ type ConfirmOTPScreenParams = {
   email: string;
 }
 
-const ConfirmOTPScreen: React.FC = () => {
-
+function ConfirmOTPScreen() {
+  const { email } = useLocalSearchParams() as ConfirmOTPScreenParams;
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(0);
   const { showToast } = useToast();
-  const { email } = useLocalSearchParams() as ConfirmOTPScreenParams;
 
   const handleSubmitOTP = () => {
-    api.post<any>('/auth/verify-otp', { email, otp }, false).then((res) => {
+    api.post('/auth/verify-otp', { email, otp }, false).then((res) => {
       if (res.success) {
         showToast(strings.otpConfirm.texts.otpSuccess, 2000);
-        router.navigate('/(auth)/login');
+        router.replace({ pathname: '/(auth)/(forgot-password)/confirm-new-password', params: { email } });
       } else {
         showToast(strings.otpConfirm.errors.error, 2000);
       }
@@ -50,7 +50,7 @@ const ConfirmOTPScreen: React.FC = () => {
     router.dismissTo('/(auth)/login');
   }
 
-  const OTPResendButtonComponent = () => {
+  const OTPResend = () => {
     if (timer === 0) {
       return (
         <Button
@@ -91,7 +91,7 @@ const ConfirmOTPScreen: React.FC = () => {
             />
           </View>
           <View>
-            <OTPResendButtonComponent />
+            <OTPResend />
           </View>
 
           <Button
