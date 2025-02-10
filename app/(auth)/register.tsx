@@ -47,9 +47,9 @@ export default function RegisterScreen() {
 
     validateData();
 
-    api.post('/auth/register', { email, phone, fullname, password }, false).then((res) => {
+    api.post('/auth/register', { email, phone, fullname, password }).then((res) => {
       if (res.success) {
-        router.push({ pathname: '/(auth)/(register)/confirm-otp', params: { email } });
+        router.push({ pathname: '/(common)/confirm-otp', params: { email, nextPathname: "/(auth)/login" } });
       } else {
         showToast(res.message || strings.register.errors.error, 2000);
       }

@@ -7,7 +7,6 @@ module.exports = function (api) {
     ],
     plugins: [
       // Nếu dùng expo-router:
-      "expo-router/babel",
       "react-native-reanimated/plugin",
     ],
   };

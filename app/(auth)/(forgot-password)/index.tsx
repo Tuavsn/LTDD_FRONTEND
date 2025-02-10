@@ -12,11 +12,11 @@ function ForgottPasswordScreen() {
   const [email, setEmail] = useState('');
 
   const handleSubmitEmail = () => {
-    api.post('/auth/forgot-password', { email }, false).then((res) => {
+    api.post('/auth/forgot-password', { email }).then((res) => {
       if (!res.success)
         showToast(res.message || strings.forgotPassword.errors.error, 2000);
       else
-        router.navigate({ pathname: '/(auth)/(forgot-password)/confirm-otp', params: { email } });
+        router.navigate({ pathname: '/(common)/confirm-otp', params: { email, nextPathname: "/(auth)/(forgot-password)/confirm-new-password" } });
     });
   }
 

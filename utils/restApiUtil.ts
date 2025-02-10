@@ -1,10 +1,11 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 // require("dotenv").config();
 
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
-  message?: string;
+  message: string;
 }
 
 const API_URL = Constants.expoConfig?.extra?.API_URL || process.env.API_URL || "https://fallback.com";
@@ -15,32 +16,34 @@ async function request<T>(
   endpoint: string,
   method: "GET" | "POST" | "PUT" | "DELETE",
   body?: any,
-  requiresAuth: boolean = true
+  reqOptions: restApiOptions = { requiresAuth: false }
 ): Promise<ApiResponse<T>> {
-  // const token = localStorage.getItem("accessToken");
-  const headers: HeadersInit = {
+  const token = await AsyncStorage.getItem("token");
+  console.log(reqOptions.headers)
+  let headers: HeadersInit = reqOptions.headers || {
     "Content-Type": "application/json",
   };
 
-  // if (requiresAuth && token) {
-  //   headers["Authorization"] = `Bearer ${token}`;
-  // }
+  if (reqOptions.requiresAuth && token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
 
   const options: RequestInit = {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body instanceof Blob ? body : body ? JSON.stringify(body) : undefined,
   };
 
+
   try {
-    console.log("API Request:", method, `${endpoint}`, body);
     const response = await fetch(`${API_URL}${endpoint}`, options);
 
     // Nếu token hết hạn, thử refresh
-    if (response.status === 401 && requiresAuth) {
+    if (response.status === 401 && reqOptions.requiresAuth) {
       const newToken = await refreshToken();
       if (newToken) {
-        return request<T>(endpoint, method, body, requiresAuth); // Thử lại với token mới
+        return request<T>(endpoint, method, body, reqOptions); // Thử lại với token mới
       }
     }
 
@@ -79,8 +82,15 @@ async function refreshToken(): Promise<string | null> {
 
 // Các hàm API cụ thể
 export const api = {
-  get: <T>(endpoint: string, requiresAuth: boolean = true) => request<T>(endpoint, "GET", undefined, requiresAuth),
-  post: <T>(endpoint: string, body: any, requiresAuth: boolean = true) => request<T>(endpoint, "POST", body, requiresAuth),
-  put: <T>(endpoint: string, body: any, requiresAuth: boolean = true) => request<T>(endpoint, "PUT", body, requiresAuth),
-  delete: <T>(endpoint: string, requiresAuth: boolean = true) => request<T>(endpoint, "DELETE", undefined, requiresAuth),
+  get: <T>(endpoint: string, options: restApiOptions = { requiresAuth: false }) => request<T>(endpoint, "GET", undefined, options),
+  post: <T>(endpoint: string, body: any, options: restApiOptions = { requiresAuth: false }) => request<T>(endpoint, "POST", body, options),
+  put: <T>(endpoint: string, body: any, options: restApiOptions = { requiresAuth: false }) => request<T>(endpoint, "PUT", body, options),
+  delete: <T>(endpoint: string, options: restApiOptions = { requiresAuth: false }) => request<T>(endpoint, "DELETE", undefined, options),
 };
+
+export type restApiOptions = {
+  requiresAuth: boolean;
+  headers?: {
+    [key: string]: string;
+  }
+}

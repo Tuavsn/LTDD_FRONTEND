@@ -1,10 +1,11 @@
 import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, ImageBackground, SafeAreaView, StyleSheet, View } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { api } from '@/utils/restApiUtil';
 import { strings } from '@/constants/String';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = () => {
   const router = useRouter();
@@ -12,25 +13,39 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    AsyncStorage.getItem('token').then((token) => {
+      if (token) {
+        router.navigate('/(profile)');
+        // AsyncStorage.removeItem('token');
+        // AsyncStorage.removeItem('user');
+      }
+    });
+  }, []);
+
   const handleLogin = () => {
+
+
     if (!email || !password) {
       setError(strings.login.errors.fullInformationRequired);
       return;
     }
     setError('');
-    api.post<{ suggestEnterOtp: boolean | undefined }>('/auth/login', { email, password }, false).then((res) => {
+    api.post<{ suggestEnterOtp: boolean | undefined } | { token: string, user: object }>('/auth/login', { email, password }).then((res) => {
       if (res.success) {
-        router.navigate('/(tabs)');
+        router.replace('/(profile)');
+        AsyncStorage.setItem('token', (res.data as { token: string })?.token);
+        AsyncStorage.setItem('user', JSON.stringify((res.data as { user: object })?.user));
       } else {
-        if (res.data?.suggestEnterOtp)
-          router.navigate({ pathname: '/(auth)/(register)/confirm-otp', params: { email } });
+        if ((res.data as { suggestEnterOtp: boolean | undefined })?.suggestEnterOtp)
+          router.navigate({ pathname: '/(common)/confirm-otp', params: { email } });
         setError(res.message || strings.login.errors.error);
       }
     });
 
   };
 
-  const handleRegisterClick = () => router.navigate('/(auth)/(register)');
+  const handleRegisterClick = () => router.navigate('/(auth)/register');
   const handleForgotPasswordClick = () => router.navigate('/(auth)/(forgot-password)');
 
   return (

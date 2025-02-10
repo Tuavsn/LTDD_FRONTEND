@@ -22,7 +22,7 @@ function ConfirmNewPassword() {
       showToast(strings.confirmNewPassword.errors.passwordNotMatch, 2000);
       return;
     }
-    api.post('/auth/reset-password', { email, newPassword }, false).then((res) => {
+    api.post('/auth/reset-password', { email, newPassword }).then((res) => {
       if (!res.success)
         showToast(res.message || strings.confirmNewPassword.errors.error, 2000);
       else
