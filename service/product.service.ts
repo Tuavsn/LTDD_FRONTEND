@@ -5,7 +5,7 @@ import { api } from "@/utils/restApiUtil";
 class ProductService {
     static async getAllProducts(): Promise<Product[]> {
         const url = ApiEndPoint.PRODUCT;
-        const res = await api.get<Product[]>(url, false);
+        const res = await api.get<Product[]>(url);
         if (res.success) {
             return res.data ?? [];
         } else {
@@ -15,7 +15,7 @@ class ProductService {
     
     static async getBestSellerProducts(): Promise<Product[]> {
         const url = `${ApiEndPoint.PRODUCT}/best-seller`;
-        const res = await api.get<Product[]>(url, false);
+        const res = await api.get<Product[]>(url);
         if (res.success) {
             return res.data ?? [];
         } else {

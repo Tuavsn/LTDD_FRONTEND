@@ -16,7 +16,7 @@ const LoginScreen = () => {
   useEffect(() => {
     AsyncStorage.getItem('token').then((token) => {
       if (token) {
-        router.navigate('/(profile)');
+        router.navigate('/(tabs)/home');
         // AsyncStorage.removeItem('token');
         // AsyncStorage.removeItem('user');
       }

@@ -7,11 +7,6 @@ import {
     BestSellingProducts,
     ProductListLazyLoad,
 } from '../../components';
-import {
-    categoriesData,
-    bestSellersData,
-    allProductsData,
-} from '../../utils/mockData';
 
 const MainScreen = () => {
   return (
@@ -21,7 +16,6 @@ const MainScreen = () => {
 
       {/* Danh sách sản phẩm sử dụng FlatList chính */}
       <ProductListLazyLoad
-        products={allProductsData}
         ListHeaderComponent={() => (
           <View>
             {/* Slide Show */}
@@ -29,11 +23,11 @@ const MainScreen = () => {
 
             {/* Danh mục sản phẩm */}
             <Text style={styles.sectionHeader}>Danh mục sản phẩm</Text>
-            <CategoryList categories={categoriesData} />
+            <CategoryList />
 
             {/* Sản phẩm bán chạy */}
             <Text style={styles.sectionHeader}>Sản phẩm bán chạy</Text>
-            <BestSellingProducts data={bestSellersData} />
+            <BestSellingProducts />
 
             {/* Tất cả sản phẩm */}
             <Text style={styles.sectionHeader}>Tất cả sản phẩm</Text>

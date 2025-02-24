@@ -7,19 +7,18 @@ import DefaultAvatar from '../assets/images/Default-Avatar.png'; // Đảm bảo
 import { useRouter } from 'expo-router';
 
 const Header = () => {
-  const [user, setUser] = useState<User>();
+  const fields = ["fullname", "email", "phone"];
+  
+  const [user, setUser] = useState(Object.fromEntries(fields.map((field) => [field, ''])));
 
   const router = useRouter();
 
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const userData = await AsyncStorage.getItem('user');
-        if (userData !== null) {
-          setUser(JSON.parse(userData));
-        }
-      } catch (error) {
-        console.error('Error loading user info:', error);
+        AsyncStorage.getItem('user').then((user) => setUser(JSON.parse(user ?? `{${fields.join(": ''")} }`)));
+      } catch (e) {
+        console.log(e);
       }
     };
     loadUser();
@@ -32,7 +31,7 @@ const Header = () => {
 
   const handleUserIcon = () => {
     // Điều hướng đến màn hình profile
-    router.push('/(main)/profile');
+    router.push('/(profile)');
   };
 
   return (
