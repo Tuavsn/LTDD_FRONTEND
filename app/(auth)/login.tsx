@@ -33,7 +33,7 @@ const LoginScreen = () => {
     setError('');
     api.post<{ suggestEnterOtp: boolean | undefined } | { token: string, user: object }>('/auth/login', { email, password }).then((res) => {
       if (res.success) {
-        router.replace('/(profile)');
+        router.replace('/(tabs)/home');
         AsyncStorage.setItem('token', (res.data as { token: string })?.token);
         AsyncStorage.setItem('user', JSON.stringify((res.data as { user: object })?.user));
       } else {
