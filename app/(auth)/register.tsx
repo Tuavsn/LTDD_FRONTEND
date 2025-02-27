@@ -40,6 +40,11 @@ export default function RegisterScreen() {
       return
     }
 
+    if (password.length < 6) {
+      setError(strings.register.errors.passwordLengthInvalid);
+      return;
+    }
+
     setError('');
   }
 
@@ -47,6 +52,7 @@ export default function RegisterScreen() {
 
     validateData();
 
+    if (error) { return };
     api.post('/auth/register', { email, phone, fullname, password }).then((res) => {
       if (res.success) {
         router.push({ pathname: '/(common)/confirm-otp', params: { email, nextPathname: "/(auth)/login" } });

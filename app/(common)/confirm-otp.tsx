@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Dimensions, ImageBackground, SafeAreaView, StyleSheet, View } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { strings } from '@/constants/String';
@@ -47,8 +47,8 @@ function ConfirmOTPScreen() {
     }, 1000);
   }
 
-  const handleBackToLoginClick = () => {
-    router.dismissTo('/(auth)/login');
+  const handleCancel = () => {
+    router.back();
   }
 
   const OTPResend = () => {
@@ -106,9 +106,9 @@ function ConfirmOTPScreen() {
           <Button
             mode='text'
             className='mt-2'
-            onPress={handleBackToLoginClick}
+            onPress={handleCancel}
           >
-            {strings.otpConfirm.texts.backToLogin}
+            {strings.otpConfirm.texts.cancel}
           </Button>
 
         </SafeAreaView>

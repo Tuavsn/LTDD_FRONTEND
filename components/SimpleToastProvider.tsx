@@ -86,6 +86,9 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
+    zIndex: 1000,
+    borderColor: '#fff',
+    borderWidth: 1,
   },
   toastText: {
     color: '#fff',

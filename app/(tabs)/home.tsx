@@ -1,14 +1,23 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, Platform, StatusBar, Text, View } from 'react-native';
 import {
-    Header,
-    Slideshow,
-    CategoryList,
-    BestSellingProducts,
-    ProductListLazyLoad,
+  Header,
+  Slideshow,
+  CategoryList,
+  BestSellingProducts,
+  ProductListLazyLoad,
 } from '../../components';
+import { useFocusEffect } from 'expo-router';
+import { getUserInfo } from '@/service/user.service';
+import { useUserInfoStore } from '@/zustand/user.store';
 
 const MainScreen = () => {
+  const setUserInfo = useUserInfoStore(state => state.setUserInfo);
+  useFocusEffect(
+    React.useCallback(() => {
+      getUserInfo(setUserInfo)
+    }, [])
+  );
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}

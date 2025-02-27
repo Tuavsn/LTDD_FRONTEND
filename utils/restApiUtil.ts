@@ -1,15 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Constants from "expo-constants";
-// require("dotenv").config();
+import { useUserInfoStore } from "@/zustand/user.store";
+import { API_SERVER_URL } from "@env";
 
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   message: string;
 }
-
-const API_URL = Constants.expoConfig?.extra?.API_URL || process.env.API_URL || "https://fallback.com";
-console.log(Constants.expoConfig?.extra);
 
 
 async function request<T>(
@@ -18,11 +15,13 @@ async function request<T>(
   body?: any,
   reqOptions: restApiOptions = { requiresAuth: false }
 ): Promise<ApiResponse<T>> {
+
   const token = await AsyncStorage.getItem("token");
-  console.log(reqOptions.headers)
+
   let headers: HeadersInit = reqOptions.headers || {
     "Content-Type": "application/json",
   };
+
 
   if (reqOptions.requiresAuth && token) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -37,7 +36,7 @@ async function request<T>(
 
 
   try {
-    const response = await fetch(`${API_URL}${endpoint}`, options);
+    const response = await fetch(`${API_SERVER_URL}${endpoint}`, options);
 
     // Nếu token hết hạn, thử refresh
     if (response.status === 401 && reqOptions.requiresAuth) {
@@ -62,7 +61,7 @@ async function refreshToken(): Promise<string | null> {
   if (!refreshToken) return null;
 
   try {
-    const res = await fetch(`${API_URL}/auth/refresh`, {
+    const res = await fetch(`${API_SERVER_URL}/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),

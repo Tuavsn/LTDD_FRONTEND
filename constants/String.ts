@@ -1,4 +1,28 @@
 export const strings = {
+  editProfile: {
+    titles: {
+      email: 'Email',
+      phone: 'Số điện thoại',
+      fullname: 'Họ và tên',
+      avatar: 'Ảnh đại diện',
+      password: 'Mật khẩu',
+      oldPassword: 'Mật khẩu cũ',
+      confirmPassword: 'Xác nhận mật khẩu',
+    },
+    errors: {
+      fullInformationRequired: 'Vui lòng nhập đầy đủ thông tin',
+      emptyOldPassword: 'Vui lòng nhập mật khẩu cũ',
+      emailInvalid: 'Email không hợp lệ',
+      phoneInvalid: 'Số điện thoại không hợp lệ',
+      passwordNotMatch: 'Mật khẩu không khớp',
+      error: 'Đã có lỗi xảy ra',
+      passwordLengthInvalid: 'Mật khẩu phải có ít nhất 6 ký tự',
+    },
+    texts: {
+      success: 'Cập nhật thông tin thành công',
+      noPermission: 'Xin lỗi, bạn cần cấp quyền truy cập để sử dụng tính năng này',
+    }
+  },
   confirmNewPassword: {
     labels: {
       title: 'Xác nhận mật khẩu mới',
@@ -44,7 +68,7 @@ export const strings = {
       error: 'Đã có lỗi xảy ra',
     },
     texts: {
-      backToLogin: 'Quay lại trang đăng nhập',
+      cancel: 'Hủy',
       resendOTP: 'Không nhận được mã? Gửi lại OTP',
       resendOTPIn: 'Gửi lại OTP trong',
       seconds: 'giây',
@@ -86,6 +110,7 @@ export const strings = {
       phoneInvalid: 'Số điện thoại không hợp lệ',
       passwordNotMatch: 'Mật khẩu không khớp',
       error: 'Đã có lỗi xảy ra',
+      passwordLengthInvalid: 'Mật khẩu phải có ít nhất 6 ký tự',
     },
     texts: {
       backToLogin: 'Đã có tài khoản? Đăng nhập ngay!',

@@ -6,21 +6,21 @@ import { TextInput, Button, Text } from 'react-native-paper';
 import { api } from '@/utils/restApiUtil';
 import { strings } from '@/constants/String';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IUserInfo, useUserInfoStore } from '@/zustand/user.store';
 
 const LoginScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const auth = useUserInfoStore(state => state.auth);
+  const setAuth = useUserInfoStore(state => state.setAuth);
+
 
   useEffect(() => {
-    AsyncStorage.getItem('token').then((token) => {
-      if (token) {
-        router.navigate('/(tabs)/home');
-        // AsyncStorage.removeItem('token');
-        // AsyncStorage.removeItem('user');
-      }
-    });
+    if (auth.token) {
+      router.replace('/(tabs)/home');
+    }
   }, []);
 
   const handleLogin = () => {
@@ -31,13 +31,13 @@ const LoginScreen = () => {
       return;
     }
     setError('');
-    api.post<{ suggestEnterOtp: boolean | undefined } | { token: string, user: object }>('/auth/login', { email, password }).then((res) => {
+    api.post<{ suggestEnterOtp: boolean | undefined, token: string, user: IUserInfo }>('/auth/login', { email, password }).then((res) => {
       if (res.success) {
         router.replace('/(tabs)/home');
-        AsyncStorage.setItem('token', (res.data as { token: string })?.token);
-        AsyncStorage.setItem('user', JSON.stringify((res.data as { user: object })?.user));
+        setAuth({ token: res.data?.token || '', user: res.data?.user || {} as IUserInfo });
+        AsyncStorage.setItem('token', res.data?.token || '');
       } else {
-        if ((res.data as { suggestEnterOtp: boolean | undefined })?.suggestEnterOtp)
+        if (res.data?.suggestEnterOtp)
           router.navigate({ pathname: '/(common)/confirm-otp', params: { email } });
         setError(res.message || strings.login.errors.error);
       }
@@ -46,7 +46,7 @@ const LoginScreen = () => {
   };
 
   const handleRegisterClick = () => router.navigate('/(auth)/register');
-  const handleForgotPasswordClick = () => router.navigate('/(auth)/(forgot-password)');
+  const handleForgotPasswordClick = () => router.navigate('/(auth)/(forgot-password)/forgot-password');
 
   return (
     <ImageBackground

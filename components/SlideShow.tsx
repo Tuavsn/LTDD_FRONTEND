@@ -1,9 +1,9 @@
 // components/Slideshow.js
 import React, { useState, useRef, useEffect } from 'react';
 import { View, ScrollView, Image, Dimensions, StyleSheet } from 'react-native';
-import Slide1 from '../assets/images/Slide-Show-1.jpg';
-import Slide2 from '../assets/images/Slide-Show-2.jpg';
-import Slide3 from '../assets/images/Slide-Show-3.webp';
+const Slide1 = require('@/assets/images/Slide-Show-1.jpg');
+const Slide2 = require('@/assets/images/Slide-Show-2.jpg');
+const Slide3 = require('@/assets/images/Slide-Show-3.webp');
 
 const { width } = Dimensions.get('window');
 

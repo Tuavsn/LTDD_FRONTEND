@@ -38,7 +38,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_URL": "http://192.168.1.109:8080/api/v1"
+      "API_URL": "http://192.168.1.109:8082/api/v1"
     }
   }
 }

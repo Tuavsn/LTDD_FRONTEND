@@ -3,8 +3,8 @@ import React from "react";
 
 export default function AuthLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
+    <Stack initialRouteName="forgot-password" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="forgot-password" />
       <Stack.Screen name="confirm-new-password" />
     </Stack>
   )
