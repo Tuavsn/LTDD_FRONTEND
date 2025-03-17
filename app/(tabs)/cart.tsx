@@ -17,17 +17,18 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import CartService from '@/service/cart.service';
 import { Cart, CartItem } from '@/constants/Types';
 import { useFocusEffect } from 'expo-router';
+import { useUserInfoStore } from '@/zustand/user.store';
 
 const CartScreen = () => {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const userId = '67bbdafc0c2703b0f2aeabbb';
+  const user = useUserInfoStore(state => state.auth.user);
 
   const fetchCart = async () => {
     setLoading(true);
     try {
-      const data = await CartService.getCart(userId);
+      const data = await CartService.getCart(user._id);
       setCart(data);
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -51,7 +52,7 @@ const CartScreen = () => {
 
   const handleUpdateQuantity = async (productId: string, quantity: number) => {
     try {
-      await CartService.updateItem(userId, productId, quantity);
+      await CartService.updateItem(user._id, productId, quantity);
       if (cart) {
         const updatedItems = cart.items.map(item => 
           item.product._id === productId 
@@ -68,7 +69,7 @@ const CartScreen = () => {
 
   const handleRemoveItem = async (productId: string) => {
     try {
-      await CartService.removeItem(userId, productId);
+      await CartService.removeItem(user._id, productId);
       if (cart) {
         const updatedItems = cart.items.filter(item => item.product._id !== productId);
         setCart({ ...cart, items: updatedItems });
@@ -81,7 +82,7 @@ const CartScreen = () => {
 
   const handleClearCart = async () => {
     try {
-      await CartService.clearCart(userId);
+      await CartService.clearCart(user._id);
       setCart({ ...cart, items: [] });
     } catch (error) {
       console.error('Error clearing cart:', error);

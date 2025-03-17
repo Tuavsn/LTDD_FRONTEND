@@ -43,7 +43,6 @@ const Header = () => {
             style={styles.avatar}
           />
           <Text style={styles.userName}>{user?.fullname || 'Guest'}</Text>
-          <Text style={styles.userName}>{user && user.fullname}</Text>
         </View>
       </TouchableOpacity>
     </View>
@@ -79,6 +78,7 @@ const styles = StyleSheet.create({
     height: 40,
     paddingHorizontal: 10,
     borderRadius: 8,
+    flexGrow: 1
   },
   searchResultsList: {
     position: 'absolute',

@@ -7,13 +7,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Product } from '@/constants/Types';
 import ProductService from '@/service/product.service';
 import CartService from '@/service/cart.service';
+import { useUserInfoStore } from '@/zustand/user.store';
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const userId = "67bbdafc0c2703b0f2aeabbb"; // Cần thay thế bằng userId thực tế
+  const user = useUserInfoStore(state => state.auth.user);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -32,7 +32,7 @@ const ProductDetailScreen = () => {
   const handleAddToCart = async () => {
     try {
       const quantity = 1;
-      await CartService.addItem(userId, productId as string, quantity);
+      await CartService.addItem(user._id, productId as string, quantity);
       Alert.alert('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng.');
     } catch (error) {
       console.error('Error adding product to cart:', error);

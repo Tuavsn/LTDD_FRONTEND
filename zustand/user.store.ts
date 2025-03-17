@@ -9,6 +9,7 @@ export const useUserInfoStore = create<{
   auth: {
     token: '',
     user: {
+      _id: '',
       email: '',
       phone: '',
       fullname: '',
@@ -35,6 +36,7 @@ export type IAuth = {
 }
 
 export type IUserInfo = {
+  _id: string;
   email: string;
   phone: string;
   fullname: string;
