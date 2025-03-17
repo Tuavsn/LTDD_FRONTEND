@@ -33,3 +33,14 @@ export interface Category extends BaseModel {
     products: Product[];
     image: string;
 }
+
+export interface CartItem {
+    product: Product;
+    quantity: number;
+}
+ 
+export interface Cart extends BaseModel {
+    items: CartItem[];
+    user: User;
+    state: "active" | "completed" | "cancelled" | "pending";
+}

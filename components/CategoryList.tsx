@@ -1,15 +1,12 @@
-// components/CategoryList.tsx (hoặc .tsx nếu dùng TypeScript)
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Category } from '../constants/Types';
 import CategoryService from '@/service/category.service';
 
-
 const CategoryList: React.FC = () => {
-
   const [categories, setCategories] = useState<Category[]>([]);
-
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -17,18 +14,22 @@ const CategoryList: React.FC = () => {
         const res: Category[] = await CategoryService.getAllCategories();
         setCategories(res);
       } catch (error) {
-        console.error('Error fetching products:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching categories:', error);
       }
     };
     fetchCategories();
-  }, [])
+  }, []);
 
   const renderItem = ({ item }: { item: Category }) => (
-    <View style={styles.categoryItem}>
+    <TouchableOpacity
+      style={styles.categoryItem}
+      onPress={() => router.push({
+        pathname: `/product-list`,
+        params: { categoryId: item._id }
+      })} // Điều hướng đến ProductListScreen
+    >
       <Text style={styles.categoryText}>{item.name}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

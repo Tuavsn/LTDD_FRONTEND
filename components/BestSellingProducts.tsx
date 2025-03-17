@@ -1,13 +1,16 @@
 // components/BestSellingProducts.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Product } from '@/constants/Types';
 import ProductService from '@/service/product.service';
+import { useRouter } from 'expo-router';
 
 const BestSellingProducts: React.FC = () => {
-
   const [bestSellerProducts, setBestSellerProducts] = useState<Product[]>([]);
+
   const [loading, setLoading] = useState<boolean>(true);
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -24,7 +27,13 @@ const BestSellingProducts: React.FC = () => {
   }, []);
 
   const renderItem = ({ item }: { item: Product }) => (
-    <View style={styles.productItem}>
+    <TouchableOpacity
+      style={styles.productItem}
+      onPress={() => router.push({
+        pathname: `/product-detail`,
+        params: { productId: item._id }
+      })}
+    >
       {/* Hình ảnh không có padding, chiếm 1/2 kích thước card */}
       <Image
         source={{ uri: item.image && item.image.length > 0 ? item.image[0].url : '' }}
@@ -49,7 +58,7 @@ const BestSellingProducts: React.FC = () => {
           Category: {item.category.name}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

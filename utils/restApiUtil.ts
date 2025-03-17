@@ -19,10 +19,12 @@ async function request<T>(
   reqOptions: restApiOptions = { requiresAuth: false }
 ): Promise<ApiResponse<T>> {
   const token = await AsyncStorage.getItem("token");
-  console.log(reqOptions.headers)
+
   let headers: HeadersInit = reqOptions.headers || {
     "Content-Type": "application/json",
   };
+
+  console.log(headers)
 
   if (reqOptions.requiresAuth && token) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -37,17 +39,21 @@ async function request<T>(
 
 
   try {
+    console.log('fetching')
     const response = await fetch(`${API_URL}${endpoint}`, options);
 
     // Nếu token hết hạn, thử refresh
     if (response.status === 401 && reqOptions.requiresAuth) {
+      console.log('no permission')
       const newToken = await refreshToken();
       if (newToken) {
         return request<T>(endpoint, method, body, reqOptions); // Thử lại với token mới
       }
     }
 
+    console.log(response)
     const data = await response.json();
+    console.log('tes2')
     console.log("API Response:", response.status, data);
     return { success: response.ok, data, message: data?.message };
   } catch (error) {

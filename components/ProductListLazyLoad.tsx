@@ -9,9 +9,11 @@ import {
   ActivityIndicator,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  TouchableOpacity,
 } from 'react-native';
 import { Product } from '@/constants/Types';
 import ProductService from '@/service/product.service';
+import { useRouter } from 'expo-router';
 
 interface ProductListLazyLoadProps {
   ListHeaderComponent?: () => JSX.Element;
@@ -29,6 +31,8 @@ const ProductListLazyLoad: React.FC<ProductListLazyLoadProps> = ({ ListHeaderCom
   const numColumns = 2;
 
   const flatListRef = useRef<FlatList<Product>>(null);
+
+  const router = useRouter();
 
   // Fetch sản phẩm từ API
   useEffect(() => {
@@ -74,7 +78,13 @@ const ProductListLazyLoad: React.FC<ProductListLazyLoadProps> = ({ ListHeaderCom
   };
 
   const renderItem = ({ item }: { item: Product }) => (
-    <View style={styles.productItem}>
+    <TouchableOpacity
+      style={styles.productItem}
+      onPress={() => router.push({
+        pathname: `/product-detail`,
+        params: { productId: item._id }
+      })}
+    >
       <Image
         source={{ uri: item.image && item.image.length > 0 ? item.image[0].url : '' }}
         style={styles.productImage}
@@ -97,7 +107,7 @@ const ProductListLazyLoad: React.FC<ProductListLazyLoadProps> = ({ ListHeaderCom
           Category: {item.category && typeof item.category === 'object' ? item.category.name : item.category}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   if (loading) {

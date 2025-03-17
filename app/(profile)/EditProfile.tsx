@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { api } from '@/utils/restApiUtil';
 import { useToast } from '@/components/SimpleToastProvider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type EditProfileScreenParams = {
   fullname: string;
@@ -16,7 +17,7 @@ const EditProfileScreen: React.FC = () => {
   const [fullname, setFullname] = useState(initialName || 'www.placeholder.com/150');
   const [email, setEmail] = useState(initialEmail);
   const [avatar, setAvatar] = useState(initialAvatar);
-  const [password, setPassword] = useState('');
+  // const [password, setPassword] = useState('');
   const [imagePicked, setImagePicked] = useState(false);
   const [image, setImage] = useState('');
   const { showToast } = useToast();
@@ -91,7 +92,7 @@ const EditProfileScreen: React.FC = () => {
 
     await api
       .post<{ changeEmail: boolean | undefined }>(
-        '/users/profile',
+        '/user/profile',
         { fullname, email, avatar: avatar_url },
         { requiresAuth: true }
       )
@@ -99,7 +100,7 @@ const EditProfileScreen: React.FC = () => {
         if (res.success) {
           if (res.data?.changeEmail) {
             console.log('test')
-            router.navigate({ pathname: '/(common)/confirm-otp', params: { email: initialEmail, nextPathname: "/(tabs)" } });
+            router.navigate({ pathname: '/(common)/confirm-otp', params: { email: initialEmail, nextPathname: "/(profile)" } });
           } else {
             router.back();
             showToast(res.message, 2000);
@@ -136,7 +137,7 @@ const EditProfileScreen: React.FC = () => {
           keyboardType="email-address"
         />
       </View>
-      <View className="mb-4">
+      {/* <View className="mb-4">
         <Text className="text-base mb-2">Mật khẩu</Text>
         <TextInput
           value={password}
@@ -145,7 +146,7 @@ const EditProfileScreen: React.FC = () => {
           placeholder="Nhập mật khẩu"
           secureTextEntry
         />
-      </View>
+      </View> */}
 
       <TouchableOpacity onPress={handleSave} className="bg-blue-500 px-4 py-2 rounded items-center">
         <Text className="text-white">Lưu</Text>
