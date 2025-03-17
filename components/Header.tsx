@@ -3,31 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Text, Image, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product, User } from '@/constants/Types';
-const DefaultAvatar = require( '../assets/images/Default-Avatar.png'); // Đảm bảo file này tồn tại trong thư mục assets/images
-import { useRouter } from 'expo-router';
-import ProductService from '@/service/product.service';
+const DefaultAvatar = require('../assets/images/Default-Avatar.png');
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useUserInfoStore } from '@/zustand/user.store';
 
 const Header = () => {
-  const fields = ["fullname", "email", "phone"];
-  
-  const [user, setUser] = useState(Object.fromEntries(fields.map((field) => [field, ''])));
+  const user = useUserInfoStore(state => state.auth.user);
 
   const [searchQuery, setSearchQuery] = useState('');
 
   const [searchResults, setSearchResults] = useState<Product[]>([]);
 
   const router = useRouter();
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        AsyncStorage.getItem('user').then((user) => setUser(JSON.parse(user ?? `{${fields.join(": ''")} }`)));
-      } catch (e) {
-        console.log(e);
-      }
-    };
-    loadUser();
-  }, []);
 
   const handleBack = () => {
     // Xử lý khi bấm nút Back
@@ -36,78 +23,27 @@ const Header = () => {
 
   const handleUserIcon = () => {
     // Điều hướng đến màn hình profile
-    router.push('/(profile)');
-  };
-
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    if (query.length > 2) {
-      try {
-        const results = await ProductService.searchProducts(query);
-        setSearchResults(results);
-      } catch (error) {
-        console.error('Search error:', error);
-      }
-    } else {
-      setSearchResults([]);
-    }
+    router.push('/(profile)/profile');
   };
 
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+      {/* <TouchableOpacity style={styles.backButton} onPress={handleBack}>
         <Text style={styles.backButtonText}>←</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search..."
+      />
 
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search..."
-          value={searchQuery}
-          onChangeText={handleSearch}
-        />
-        {searchResults.length > 0 && (
-          <FlatList
-            style={styles.searchResultsList}
-            data={searchResults}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <TouchableOpacity 
-                style={styles.searchResultItem} 
-                onPress={() => router.push(`/product/${item._id}`)}
-              >
-                {/* Ảnh sản phẩm */}
-                <Image 
-                  source={{ uri: item.image && item.image.length > 0 ? item.image[0].url : '' }} 
-                  style={styles.searchProductImage} 
-                />
-
-                {/* Thông tin sản phẩm */}
-                <View style={styles.textContainer}>
-                  <Text style={styles.productName} numberOfLines={1} ellipsizeMode="tail">
-                    {item.name}
-                  </Text>
-                  <Text style={styles.productPrice}>
-                    {item.price.toLocaleString('vi-VN')}đ
-                  </Text>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.ratingText}>★ {item.rating}</Text>
-                    <Text style={styles.soldText}>Đã bán: {item.soldCount}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-        )}
-      </View>
-
-      <TouchableOpacity style={styles.userIcon} onPress={() => router.push('/(profile)')}>
+      <TouchableOpacity style={styles.userIcon} onPress={handleUserIcon}>
         <View style={styles.userContainer}>
           <Image
-            source={user?.avatar ? { uri: user.avatar } : DefaultAvatar}
+            source={user ? { uri: user.avatar } : DefaultAvatar}
             style={styles.avatar}
           />
           <Text style={styles.userName}>{user?.fullname || 'Guest'}</Text>
+          <Text style={styles.userName}>{user && user.fullname}</Text>
         </View>
       </TouchableOpacity>
     </View>

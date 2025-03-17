@@ -9,6 +9,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { useColorScheme } from '@/hooks/useColorScheme';
 import "@/global.css";
 import { ToastProvider } from '@/components/SimpleToastProvider';
+import 'react-native-url-polyfill/auto';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

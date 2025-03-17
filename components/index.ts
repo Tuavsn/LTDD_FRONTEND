@@ -4,6 +4,7 @@ import CategoryList from "./CategoryList";
 import BestSellingProducts from "./BestSellingProducts";
 import ProductListLazyLoad from "./ProductListLazyLoad";
 import BottomNavigation from "./BottomNavigation";
+import EditUserField from "./EditUserField";
 
 export {
     Header,
@@ -12,4 +13,5 @@ export {
     BestSellingProducts,
     ProductListLazyLoad,
     BottomNavigation,
+    EditUserField
 }
