@@ -1,12 +1,12 @@
 import { Stack } from 'expo-router'
 import React from 'react'
 
-export default function ProfileLayout() {
-
+const _layout = () => {
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="profile" />
-      <Stack.Screen name="order-history" />
+      <Stack.Screen name="index" />
     </Stack>
   )
 }
+
+export default _layout

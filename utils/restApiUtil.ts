@@ -1,6 +1,9 @@
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useUserInfoStore } from "@/zustand/user.store";
-import { API_SERVER_URL } from "@env";
+
+import { API_SERVER_HOST, API_SERVER_PORT } from '@env'
+
+const API_SERVER_URL = `http://${API_SERVER_HOST}:${API_SERVER_PORT}/api/v1`;
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -15,6 +18,8 @@ async function request<T>(
   body?: any,
   reqOptions: restApiOptions = { requiresAuth: false }
 ): Promise<ApiResponse<T>> {
+
+  console.log(`${API_SERVER_URL}${endpoint}`)
 
   const token = await AsyncStorage.getItem("token");
 
@@ -40,16 +45,13 @@ async function request<T>(
 
     // Nếu token hết hạn, thử refresh
     if (response.status === 401 && reqOptions.requiresAuth) {
-      console.log('no permission')
       const newToken = await refreshToken();
       if (newToken) {
         return request<T>(endpoint, method, body, reqOptions); // Thử lại với token mới
       }
     }
 
-    console.log(response)
     const data = await response.json();
-    console.log('tes2')
     console.log("API Response:", response.status, data);
     return { success: response.ok, data, message: data?.message };
   } catch (error) {
@@ -60,7 +62,7 @@ async function request<T>(
 
 // Hàm tự động refresh token nếu token cũ hết hạn
 async function refreshToken(): Promise<string | null> {
-  const refreshToken = localStorage.getItem("refreshToken");
+  const refreshToken = await AsyncStorage.getItem("refreshToken");
   if (!refreshToken) return null;
 
   try {

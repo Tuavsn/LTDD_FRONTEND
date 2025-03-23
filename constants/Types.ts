@@ -11,11 +11,16 @@ export interface Image {
 
 export interface User extends BaseModel {
     email: string;
-    name: string;
+    fullname: string;
     avatar: string;
     phone: string;
+    address: Address[];
+    role: 'Admin' | 'User';
+}
+
+export interface Address {
+    isPrimary: boolean;
     address: string;
-    role: 'admin' | 'user';
 }
 
 export interface Product extends BaseModel {
@@ -38,9 +43,9 @@ export interface CartItem {
     product: Product;
     quantity: number;
 }
- 
+
 export interface Cart extends BaseModel {
     items: CartItem[];
-    user: User;
-    state: "active" | "completed" | "cancelled" | "pending";
+    user?: User;
+    state?: "active" | "completed" | "cancelled" | "pending";
 }

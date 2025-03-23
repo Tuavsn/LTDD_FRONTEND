@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { 
-  Text, 
-  StyleSheet, 
-  SafeAreaView, 
-  FlatList, 
-  View, 
-  Image, 
-  TouchableOpacity, 
-  ActivityIndicator, 
+import {
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  FlatList,
+  View,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
   Platform,
   StatusBar,
   RefreshControl,
@@ -16,7 +16,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CartService from '@/service/cart.service';
 import { Cart, CartItem } from '@/constants/Types';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useUserInfoStore } from '@/zustand/user.store';
 
 const CartScreen = () => {
@@ -38,6 +38,11 @@ const CartScreen = () => {
     }
   };
 
+  const handleCheckout = () => {
+    console.log('cart', cart);
+    router.navigate({ pathname: '/(checkout)', params: { cartStr: JSON.stringify(cart) } })
+  };
+
   // Tự động refetch mỗi khi màn hình được focus
   useFocusEffect(
     useCallback(() => {
@@ -54,9 +59,9 @@ const CartScreen = () => {
     try {
       await CartService.updateItem(user._id, productId, quantity);
       if (cart) {
-        const updatedItems = cart.items.map(item => 
-          item.product._id === productId 
-            ? { ...item, quantity } 
+        const updatedItems = cart.items.map(item =>
+          item.product._id === productId
+            ? { ...item, quantity }
             : item
         );
         setCart({ ...cart, items: updatedItems });
@@ -83,7 +88,7 @@ const CartScreen = () => {
   const handleClearCart = async () => {
     try {
       await CartService.clearCart(user._id);
-      setCart({ ...cart, items: [] });
+      setCart({ ...(cart as Cart), items: [] });
     } catch (error) {
       console.error('Error clearing cart:', error);
       Alert.alert('Lỗi', 'Không thể xóa giỏ hàng.');
@@ -98,22 +103,22 @@ const CartScreen = () => {
         <Text>Số lượng: {item.quantity}</Text>
         <Text style={styles.itemPrice}>{item.product.price.toLocaleString('vi-VN')}đ</Text>
         <View style={styles.actionContainer}>
-          <TouchableOpacity 
-            style={styles.quantityButton} 
+          <TouchableOpacity
+            style={styles.quantityButton}
             onPress={() => handleUpdateQuantity(item.product._id, item.quantity - 1)}
             disabled={item.quantity <= 1}
           >
             <Ionicons name="remove-circle-outline" size={24} color="#EA1916" />
           </TouchableOpacity>
           <Text>{item.quantity}</Text>
-          <TouchableOpacity 
-            style={styles.quantityButton} 
+          <TouchableOpacity
+            style={styles.quantityButton}
             onPress={() => handleUpdateQuantity(item.product._id, item.quantity + 1)}
           >
             <Ionicons name="add-circle-outline" size={24} color="#EA1916" />
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.removeButton} 
+          <TouchableOpacity
+            style={styles.removeButton}
             onPress={() => handleRemoveItem(item.product._id)}
           >
             <Ionicons name="trash" size={24} color="#FF0000" />
@@ -148,9 +153,13 @@ const CartScreen = () => {
       ) : (
         <Text style={styles.message}>Hiện tại giỏ hàng của bạn trống.</Text>
       )}
-      <TouchableOpacity style={styles.payButton}>
-        <Text style={styles.payButtonText}>Thanh toán ngay</Text>
-      </TouchableOpacity>
+      {
+        cart && cart.items.length > 0 &&
+        <TouchableOpacity style={styles.payButton} disabled={!cart || cart.items.length === 0}
+          onPress={handleCheckout}>
+          <Text style={styles.payButtonText}>Thanh toán ngay</Text>
+        </TouchableOpacity>
+      }
     </SafeAreaView>
   );
 };

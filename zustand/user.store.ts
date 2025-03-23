@@ -1,8 +1,9 @@
+import { User } from '@/constants/Types';
 import { create } from 'zustand';
 
 export const useUserInfoStore = create<{
   auth: IAuth,
-  setUserInfo: (userInfo: Partial<IUserInfo>) => void,
+  setUserInfo: (userInfo: Partial<User>) => void,
   setToken: (token: string) => void,
   setAuth: (auth: IAuth) => void,
 }>(set => ({
@@ -13,11 +14,14 @@ export const useUserInfoStore = create<{
       email: '',
       phone: '',
       fullname: '',
+      address: '',
+      role: 'user',
       avatar: '',
-      role: '',
+      createdAt: '',
+      updatedAt: '',
     }
   },
-  setUserInfo: (newUserInfo: Partial<IUserInfo>) =>
+  setUserInfo: (newUserInfo: Partial<User>) =>
     set((state) => {
       console.log('newUserInfo', newUserInfo);
       return ({ auth: { ...state.auth, user: { ...state.auth.user, ...newUserInfo } } });
@@ -32,14 +36,5 @@ export const useUserInfoStore = create<{
 
 export type IAuth = {
   token: string;
-  user: IUserInfo;
-}
-
-export type IUserInfo = {
-  _id: string;
-  email: string;
-  phone: string;
-  fullname: string;
-  avatar: string;
-  role: string;
+  user: User;
 }

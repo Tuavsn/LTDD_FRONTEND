@@ -1,7 +1,7 @@
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '@env';
 import { Cloudinary } from '@cloudinary/url-gen'
 import { upload } from 'cloudinary-react-native'
-import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '@env'
-import { UploadApiResponse } from 'cloudinary-react-native/lib/typescript/src/api/upload/model/params/upload-params';
+import { UploadApiResponse } from 'cloudinary-react-native/lib/typescript/src/api/upload/model/params/upload-params'
 
 const cld = new Cloudinary({
   cloud: {

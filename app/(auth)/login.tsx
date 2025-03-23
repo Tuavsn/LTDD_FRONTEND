@@ -6,12 +6,13 @@ import { TextInput, Button, Text } from 'react-native-paper';
 import { api } from '@/utils/restApiUtil';
 import { strings } from '@/constants/String';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { IUserInfo, useUserInfoStore } from '@/zustand/user.store';
+import { useUserInfoStore } from '@/zustand/user.store';
+import { User } from '@/constants/Types';
 
 const LoginScreen = () => {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('vkq265@gmail.com');
+  const [password, setPassword] = useState('qwerty');
   const [error, setError] = useState('');
   const auth = useUserInfoStore(state => state.auth);
   const setAuth = useUserInfoStore(state => state.setAuth);
@@ -21,7 +22,7 @@ const LoginScreen = () => {
     if (auth.token) {
       router.replace('/(tabs)/home');
     }
-  }, []);
+  }, [auth]);
 
   const handleLogin = () => {
 
@@ -31,10 +32,9 @@ const LoginScreen = () => {
       return;
     }
     setError('');
-    api.post<{ suggestEnterOtp: boolean | undefined, token: string, user: IUserInfo }>('/auth/login', { email, password }).then((res) => {
+    api.post<{ suggestEnterOtp: boolean | undefined, token: string, user: User }>('/auth/login', { email, password }).then((res) => {
       if (res.success) {
-        router.replace('/(tabs)/home');
-        setAuth({ token: res.data?.token || '', user: res.data?.user || {} as IUserInfo });
+        setAuth({ token: res.data?.token || '', user: res.data?.user || {} as User });
         AsyncStorage.setItem('token', res.data?.token || '');
       } else {
         if (res.data?.suggestEnterOtp)

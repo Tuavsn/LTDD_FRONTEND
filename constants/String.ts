@@ -1,4 +1,14 @@
 export const strings = {
+  orderHistory: {
+    states: {
+      new: 'Đơn hàng mới',
+      accepted: 'Đã xác nhận',
+      pending: 'Đang chờ hàng',
+      shipping: 'Đang giao',
+      delivered: 'Đã giao',
+      canceled: 'Đã hủy',
+    }
+  },
   editProfile: {
     titles: {
       email: 'Email',
