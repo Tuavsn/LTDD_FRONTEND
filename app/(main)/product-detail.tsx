@@ -1,32 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { 
   View, Text, Image, StyleSheet, ScrollView, ActivityIndicator, 
   TouchableOpacity, Platform, StatusBar, Alert 
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Product } from '@/constants/Types';
 import ProductService from '@/service/product.service';
 import CartService from '@/service/cart.service';
 import { useUserInfoStore } from '@/zustand/user.store';
+import ProductRating from '@/components/ProductRating';
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const user = useUserInfoStore(state => state.auth.user);
+  const router = useRouter();
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchProduct = async () => {
+        try {
+          setLoading(true);
+          const res = await ProductService.getProductById(productId as string);
+          setProduct(res);
+        } catch (error) {
+          console.error('Error fetching product:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      if (productId) {
+        fetchProduct();
+      }
+    }, [productId])
+  );
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchSimilarProducts = async () => {
       try {
-        const res = await ProductService.getProductById(productId as string);
-        setProduct(res);
+        if (productId) {
+          const result = await ProductService.getSimilarProducts(productId as string);
+          setSimilarProducts(result.data);
+        }
       } catch (error) {
-        console.error('Error fetching product:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching similar products:', error);
       }
     };
-    if (productId) fetchProduct();
+
+    fetchSimilarProducts();
   }, [productId]);
 
   const handleAddToCart = async () => {
@@ -56,12 +80,19 @@ const ProductDetailScreen = () => {
     );
   }
 
+  const ratingCounts = product.ratingCounts || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
   return (
     <ScrollView style={styles.container}>
-      <Image source={{ uri: product.image?.[0]?.url || '' }} style={styles.productImage} />
+      <Image 
+        source={{ uri: product.image?.[0]?.url || '' }} 
+        style={styles.productImage} 
+      />
       <View style={styles.infoContainer}>
         <Text style={styles.productName}>{product.name}</Text>
-        <Text style={styles.productPrice}>{product.price.toLocaleString('vi-VN')}đ</Text>
+        <Text style={styles.productPrice}>
+          {product.price.toLocaleString('vi-VN')}đ
+        </Text>
         <Text style={styles.productDescription}>{product.description}</Text>
 
         <View style={styles.statsRow}>
@@ -73,10 +104,47 @@ const ProductDetailScreen = () => {
           <Text style={styles.buyButtonText}>Mua ngay</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
+        <TouchableOpacity 
+          style={styles.addToCartButton} 
+          onPress={handleAddToCart}
+        >
           <Text style={styles.addToCartButtonText}>Thêm vào giỏ hàng</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Similar products slider */}
+      {similarProducts.length > 0 && (
+        <View style={styles.similarContainer}>
+          <Text style={styles.similarTitle}>Sản phẩm tương tự</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {similarProducts.map((item) => (
+              <TouchableOpacity 
+                key={item._id} 
+                style={styles.similarItem} 
+                onPress={() => router.push(`/product/${item._id}`)}
+              >
+                <Image 
+                  source={{ uri: item.image?.[0]?.url || '' }} 
+                  style={styles.similarImage} 
+                />
+                <Text numberOfLines={1} style={styles.similarName}>{item.name}</Text>
+                <Text style={styles.similarPrice}>
+                  {item.price.toLocaleString('vi-VN')}đ
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Product Rating */}
+      <ProductRating 
+        productId={productId as string}
+        averageRating={product.rating}
+        totalReviews={product.reviewCount}
+        ratingCounts={ratingCounts}
+      />
+
     </ScrollView>
   );
 };
@@ -153,6 +221,36 @@ const styles = StyleSheet.create({
   addToCartButtonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  similarContainer: {
+    marginTop: 20,
+    paddingHorizontal: 16,
+  },
+  similarTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  similarItem: {
+    width: 140,
+    marginRight: 12,
+  },
+  similarImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    resizeMode: 'cover',
+  },
+  similarName: {
+    fontSize: 14,
+    marginTop: 5,
+    color: '#333',
+  },
+  similarPrice: {
+    fontSize: 14,
+    color: '#EA1916',
     fontWeight: 'bold',
   },
 });

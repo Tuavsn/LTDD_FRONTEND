@@ -1,13 +1,13 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { API_SERVER_HOST, API_SERVER_PORT } from '@env'
+import { EXPO_PUBLIC_API_SERVER_HOST, EXPO_PUBLIC_API_SERVER_PORT } from '@env'
 import { openRoutes } from "@/constants/ApiEndPoint";
 
 // const API_SERVER_HOST = '192.168.191.165'
 // const API_SERVER_PORT = '8082'
 
-const API_SERVER_URL = `http://${API_SERVER_HOST}:${API_SERVER_PORT}/api/v1`;
+const API_SERVER_URL = `http://${EXPO_PUBLIC_API_SERVER_HOST}:${EXPO_PUBLIC_API_SERVER_PORT}/api/v1`;
 
 export interface ApiResponse<T = any> {
   success: boolean;
