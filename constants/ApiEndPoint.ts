@@ -6,6 +6,7 @@ export const ApiEndPoint = {
     ORDER: '/order',
     CART: '/cart',
     NOTIFICATION: '/notification',
+    REVIEW: '/review'
 }
 
 export const openRoutes = {

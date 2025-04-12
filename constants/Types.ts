@@ -25,6 +25,26 @@ export interface Address {
     address: string;
 }
 
+export interface RatingCounts {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+}
+
+export interface Review extends BaseModel {
+    userId: {
+      _id: string;
+      name: string;
+      avatar?: string;
+    };
+    productId: string;
+    rating: number;
+    comment: string;
+    images?: Image[];
+}
+
 export interface Product extends BaseModel {
     name: string;
     price: number;
@@ -33,6 +53,9 @@ export interface Product extends BaseModel {
     category: Category;
     rating: number;
     soldCount: number;
+    reviewCount: number;
+    ratingCounts: RatingCounts;
+    reviews?: Review[];
 }
 
 export interface Category extends BaseModel {
