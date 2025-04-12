@@ -1,4 +1,4 @@
-import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Platform, RefreshControl, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import StatusList from './components/StatusList';
 import { OrderState } from '@/constants/Enum';
@@ -86,13 +86,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
-    paddingTop: 20,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   statesContainer: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20
+    alignItems: 'center'
   },
 })

@@ -4,7 +4,7 @@ import { useUserInfoStore } from "@/zustand/user.store"
 
 
 export const getUserInfo = async (setUser: (user: Partial<User>) => void) => {
-  const res = await api.get<{ user: Partial<User> }>('/user/me', { requiresAuth: true })
+  const res = await api.get<{ user: Partial<User> }>('/user/me')
 
   if (res.success) {
     setUser(res.data?.user ?? {} as User)

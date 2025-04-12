@@ -10,6 +10,9 @@ import {
   ActivityIndicator,
   Dimensions,
   Image,
+  Modal,
+  Platform,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -18,12 +21,21 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UserInfoPanel from './components/UserInfoPanel';
+import { BlurView } from 'expo-blur';
 
 const ProfileScreen = () => {
   const setAuth = useUserInfoStore((state) => state.setAuth);
   const setUserInfo = useUserInfoStore((state) => state.setUserInfo);
   const user = useUserInfoStore((state) => state.auth.user);
   const [isEditing, setIsEditing] = React.useState(false);
+  const [initialData, setInitialData] = React.useState('');
+  const [title, setTitle] = React.useState('');
+  const [fieldName, setFieldName] = React.useState('');
+  const [isAvatar, setIsAvatar] = React.useState(false);
+  const [isEmail, setIsEmail] = React.useState(false);
+  const [isPhone, setIsPhone] = React.useState(false);
+  const [isFullname, setIsFullname] = React.useState(false);
+  const [isPassword, setIsPassword] = React.useState(false);
   const [showProfile, setShowProfile] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -34,7 +46,11 @@ const ProfileScreen = () => {
     }, [])
   );
 
-  const handleEditField = () => {
+  const handleEditAvatarField = () => {
+    setInitialData(user.avatar ?? '');
+    setTitle(strings.editProfile.titles.avatar);
+    setFieldName('avatar');
+    setIsAvatar(true);
     setIsEditing(true);
   };
 
@@ -52,22 +68,52 @@ const ProfileScreen = () => {
     router.navigate({ pathname: '/(profile)/order-history' });
   };
 
+  React.useEffect(() => {
+    if (!isEditing) {
+      setIsAvatar(false);
+      setIsEmail(false);
+      setIsPhone(false);
+      setIsFullname(false);
+      setIsPassword(false);
+      setIsLoading(true);
+      getUserInfo(setUserInfo).finally(() => setIsLoading(false));
+    }
+  }, [isEditing]);
+
   const { height } = Dimensions.get('window');
   const avatarSize = height * 0.3;
 
   return (
     <SafeAreaView style={styles.container}>
-      {isEditing && (
-        <View>
-          <EditUserField
-            initialData={user.avatar ?? ''}
-            title={strings.editProfile.titles.avatar}
-            fieldName={'avatar'}
-            handleCancel={handleCancelEditting}
-            isAvatar={true}
+      <Modal
+        transparent={true}
+        animationType="fade"
+        visible={isEditing}
+        onRequestClose={handleCancelEditting}
+      >
+        <View style={styles.modalContainer}>
+          {/* BlurView tạo hiệu ứng làm mờ cho nền */}
+          <BlurView
+            style={styles.absolute}
+            intensity={80}
+            tint="dark"
+            onTouchEnd={handleCancelEditting}
           />
+          <View style={styles.modalContent}>
+            <EditUserField
+              initialData={initialData}
+              title={title}
+              fieldName={fieldName}
+              handleCancel={handleCancelEditting}
+              isAvatar={isAvatar}
+              isEmail={isEmail}
+              isPhone={isPhone}
+              isFullname={isFullname}
+              isPassword={isPassword}
+            />
+          </View>
         </View>
-      )}
+      </Modal>
 
       {/* Cover image and avatar */}
       <View style={styles.coverContainer}>
@@ -78,7 +124,7 @@ const ProfileScreen = () => {
         />
         {/* Avatar placed over the cover */}
         <View style={styles.avatarContainer}>
-          <TouchableOpacity onPress={handleEditField}>
+          <TouchableOpacity onPress={handleEditAvatarField}>
             {isLoading ? (
               <ActivityIndicator size="large" color="#EA1916" />
             ) : (
@@ -110,7 +156,19 @@ const ProfileScreen = () => {
             />
           </View>
         </TouchableOpacity>
-        {showProfile && <UserInfoPanel />}
+        {showProfile && (
+          <UserInfoPanel
+            isLoading={isLoading}
+            setIsEditing={setIsEditing}
+            setFieldName={setFieldName}
+            setInitialData={setInitialData}
+            setTitle={setTitle}
+            setIsEmail={setIsEmail}
+            setIsPhone={setIsPhone}
+            setIsFullname={setIsFullname}
+            setIsPassword={setIsPassword}
+          />
+        )}
       </View>
 
       {/* Order History Navigation Panel */}
@@ -134,23 +192,24 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  // Container for the entire screen.
+  // Container cho toàn bộ màn hình.
   container: {
     flex: 1,
     backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  // Container for the cover image and avatar.
+  // Container cho cover image và avatar.
   coverContainer: {
     position: 'relative',
     backgroundColor: 'black',
   },
-  // Cover image styling: full width, fixed height (320 pixels) and reduced opacity.
+  // Cover image: full width, height cố định, áp dụng opacity.
   coverImage: {
     width: '100%',
     height: 320,
     opacity: 0.7,
   },
-  // Avatar container positioned absolutely over the cover image.
+  // Container cho avatar, được đặt nằm giữa cover image.
   avatarContainer: {
     position: 'absolute',
     top: 0,
@@ -160,12 +219,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Avatar image styling: border applied to make it stand out.
+  // Avatar image với border để nổi bật.
   avatarImage: {
     borderWidth: 4,
     borderColor: 'white',
   },
-  // Panel container for sections (User info and Order history).
+  // Container cho các panel (tài khoản, đơn hàng).
   panel: {
     width: '100%',
     paddingTop: 16,
@@ -173,28 +232,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: 'white',
   },
-  // Additional styling for the first panel: a bottom border.
+  // Panel đầu tiên có thêm đường viền dưới.
   profilePanel: {
     borderBottomWidth: 1,
     borderBottomColor: 'gray',
   },
-  // Header for each panel section.
+  // Header cho mỗi panel.
   panelHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  // Panel title text styling.
+  // Tiêu đề của panel.
   panelTitle: {
     fontSize: 24,
     fontWeight: 'bold',
   },
-  // Container for the logout button, centering it.
+  // Container cho nút logout, căn giữa.
   buttonContainer: {
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Logout button styling.
+  // Styling cho nút logout.
   button: {
     width: '50%',
     marginTop: 24,
@@ -202,11 +261,41 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 9999,
   },
-  // Logout button text styling.
+  // Text của nút logout.
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  // Container của modal bao phủ toàn màn hình với nền tối mờ.
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    height: '100%',
+    width: '100%',
+  },
+  // Style dùng cho BlurView phủ toàn màn hình.
+  absolute: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  // Nội dung của modal (form chỉnh sửa).
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    alignItems: 'center',
   },
 });
 

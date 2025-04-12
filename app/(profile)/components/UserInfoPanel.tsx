@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getUserInfo } from '@/service/user.service';
 import { EditUserField } from '@/components';
 import { strings } from '@/constants/String';
@@ -8,17 +8,20 @@ import { useFocusEffect } from 'expo-router';
 import { DataTable } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const UserInfoPanel = () => {
+interface UserInfoPanelProps {
+  isLoading: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  setTitle: React.Dispatch<React.SetStateAction<string>>;
+  setFieldName: React.Dispatch<React.SetStateAction<string>>;
+  setInitialData: React.Dispatch<React.SetStateAction<string>>;
+  setIsEmail: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsPhone: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsFullname: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsPassword: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const UserInfoPanel = ({ isLoading, setIsEditing, setInitialData, setTitle, setFieldName, setIsEmail, setIsFullname, setIsPassword, setIsPhone }: UserInfoPanelProps) => {
   const user = useUserInfoStore(state => state.auth.user);
-  const [isEditing, setIsEditing] = useState(false);
-  const [initialData, setInitialData] = useState('');
-  const [title, setTitle] = useState('');
-  const [fieldName, setFieldName] = useState('');
-  const [isEmail, setIsEmail] = useState(false);
-  const [isPhone, setIsPhone] = useState(false);
-  const [isFullname, setIsFullname] = useState(false);
-  const [isAvatar, setIsAvatar] = useState(false);
-  const [isPassword, setIsPassword] = useState(false);
   const [requireOldPassword, setRequireOldPassword] = useState(false);
 
   const handleEditField = (title: string, value: string) => {
@@ -38,10 +41,6 @@ const UserInfoPanel = () => {
         setFieldName('fullname');
         setIsFullname(true);
         break;
-      case strings.editProfile.titles.avatar:
-        setFieldName('avatar');
-        setIsAvatar(true);
-        break;
       default: setFieldName('password');
         setRequireOldPassword(true);
         setIsPassword(true);
@@ -56,27 +55,11 @@ const UserInfoPanel = () => {
     setIsEmail(false);
     setIsPhone(false);
     setIsFullname(false);
-    setIsAvatar(false);
     setIsPassword(false);
   };
 
   return (
     <View>
-      {isEditing && (
-        <EditUserField
-          initialData={initialData}
-          title={title}
-          fieldName={fieldName}
-          handleCancel={handleCancelEditting}
-          isEmail={isEmail}
-          isPhone={isPhone}
-          isFullName={isFullname}
-          isAvatar={isAvatar}
-          isPassword={isPassword}
-          requireOldPassword={requireOldPassword}
-        />
-      )}
-
       {/* User Info Section */}
       <View style={styles.panelContainer}>
         {[
@@ -88,6 +71,7 @@ const UserInfoPanel = () => {
           <UserInfoField
             key={index}
             {...field}
+            isLoading={isLoading}
             handleEditField={handleEditField}
             uniqueKey={index}
           />
@@ -100,6 +84,7 @@ const UserInfoPanel = () => {
 type UserInfoFieldProps = {
   title: string;
   value: string;
+  isLoading: boolean;
   handleEditField: (title: string, value: string) => void;
   uniqueKey: number;
 };
@@ -109,12 +94,13 @@ const UserInfoField = ({
   value,
   handleEditField,
   uniqueKey,
+  isLoading,
 }: UserInfoFieldProps) => {
   return (
     <TouchableOpacity onPress={() => handleEditField(title, value)}>
       <DataTable.Row style={styles.dataTableRow}>
         <DataTable.Cell style={styles.cellTitle}>{title}</DataTable.Cell>
-        <DataTable.Cell style={styles.cellValue}>{value}</DataTable.Cell>
+        <DataTable.Cell style={styles.cellValue}>{isLoading ? (<ActivityIndicator size="small" color="#EA1916" />) : value}</DataTable.Cell>
         <DataTable.Cell style={styles.cellIcon}>
           <Text>
             <Icon name="edit" size={20} color="blue" />
@@ -143,8 +129,19 @@ const styles = StyleSheet.create({
   },
   cellValue: {
     flex: 1,
+    alignContent: 'center',
   },
   cellIcon: {
     flex: 0.2,
   },
+  coverBackground: {
+    backgroundColor: '#000',
+    opacity: 0.8,
+    zIndex: 50,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  }
 });

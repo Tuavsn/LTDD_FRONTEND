@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, ImageBackground, SafeAreaView, StyleSheet, View } from 'react-native';
+import { Dimensions, ImageBackground, Platform, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '@/utils/restApiUtil';
@@ -110,18 +110,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignSelf: 'center',
-    padding: 20,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     width: '80%',
   },
   titleContainer: {
     marginBottom: 16,
+    display: 'flex',
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    padding: 16,
     alignSelf: 'flex-start', // letting the container size fit its content
   },
   title: {
+    padding: 16,
+    backgroundColor: 'rgba(255,255,255,0.8)',
     fontSize: 32,
     fontWeight: 'bold',
   },

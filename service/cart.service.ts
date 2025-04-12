@@ -10,7 +10,7 @@ class CartService {
    */
   static async getCart(userId: string): Promise<Cart> {
     const url = `${ApiEndPoint.CART}/${userId}`;
-    const res = await api.get<Cart>(url, { requiresAuth: true });
+    const res = await api.get<Cart>(url);
     if (res.success) {
       return res.data!;
     } else {
@@ -28,7 +28,7 @@ class CartService {
    */
   static async addItem(userId: string, productId: string, quantity: number): Promise<Cart> {
     const url = `${ApiEndPoint.CART}/add`;
-    const res = await api.post<Cart>(url, { userId, productId, quantity }, { requiresAuth: true });
+    const res = await api.post<Cart>(url, { userId, productId, quantity });
     if (res.success) {
       return res.data!;
     } else {
@@ -46,7 +46,7 @@ class CartService {
    */
   static async updateItem(userId: string, productId: string, quantity: number): Promise<Cart> {
     const url = `${ApiEndPoint.CART}/update`;
-    const res = await api.put<Cart>(url, { userId, productId, quantity }, { requiresAuth: true });
+    const res = await api.put<Cart>(url, { userId, productId, quantity });
     if (res.success) {
       return res.data!;
     } else {
@@ -63,7 +63,7 @@ class CartService {
    */
   static async removeItem(userId: string, productId: string): Promise<Cart> {
     const url = `${ApiEndPoint.CART}/remove`;
-    const res = await api.post<Cart>(url, { userId, productId }, { requiresAuth: true });
+    const res = await api.post<Cart>(url, { userId, productId });
     if (res.success) {
       return res.data!;
     } else {
@@ -79,7 +79,7 @@ class CartService {
    */
   static async clearCart(userId: string): Promise<Cart> {
     const url = `${ApiEndPoint.CART}/clear`;
-    const res = await api.post<Cart>(url, { userId }, { requiresAuth: true });
+    const res = await api.post<Cart>(url, { userId });
     if (res.success) {
       return res.data!;
     } else {
@@ -94,9 +94,9 @@ class CartService {
    * @param userId ID của người dùng
    * @returns Promise<Cart>
    */
-  static async checkout(address: string, phone: string, paymentMethod: string): Promise<{ cart: Cart }> {
+  static async checkoutCart(address: string, phone: string, paymentMethod: string, discountCode: string) {
     const url = `${ApiEndPoint.CART}/checkout`;
-    const res = await api.post<{ cart: Cart }>(url, { address, phone, paymentMethod }, { requiresAuth: true });
+    const res = await api.post(url, { address, phone, paymentMethod, discountCode });
     if (res.success) {
       return res.data!;
     } else {

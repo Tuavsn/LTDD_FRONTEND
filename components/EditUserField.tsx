@@ -15,7 +15,7 @@ type EditUserFieldProps = {
   fieldName: string;
   isEmail?: boolean;
   isPhone?: boolean;
-  isFullName?: boolean;
+  isFullname?: boolean;
   isAvatar?: boolean;
   isPassword?: boolean;
   requireOldPassword?: boolean;
@@ -29,7 +29,7 @@ const EditUserField = ({
   requireOldPassword,
   isEmail,
   isPhone,
-  isFullName,
+  isFullname,
   isAvatar,
   isPassword,
   handleCancel,
@@ -97,7 +97,7 @@ const EditUserField = ({
       body['oldPassword'] = oldPassword;
     }
 
-    api.put<{ changeEmail: boolean }>('/user/profile', body, { requiresAuth: true }).then((res) => {
+    api.put<{ changeEmail: boolean }>('/user/profile', body).then((res) => {
       showToast(res.message ?? strings.editProfile.texts.success);
       if (res.success) {
         handleCancel();
@@ -152,7 +152,7 @@ const EditUserField = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>Chỉnh sửa {title.toLocaleLowerCase()}</Text>
       </View>
@@ -181,7 +181,7 @@ const EditUserField = ({
               onChangeText={setData}
               mode="outlined"
               keyboardType={isEmail ? 'email-address' : isPhone ? 'phone-pad' : 'default'}
-              autoCapitalize={isFullName ? 'words' : 'none'}
+              autoCapitalize={isFullname ? 'words' : 'none'}
               secureTextEntry={isPassword}
             />
             {isPassword && (
@@ -204,21 +204,14 @@ const EditUserField = ({
           </Button>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',
-    opacity: 0.8,
-    zIndex: 50,
-    inset: 0,
-    position: 'absolute',
-    flexDirection: 'column',
+    width: '100%',
+    zIndex: 100,
   },
   titleContainer: {
     backgroundColor: 'white',

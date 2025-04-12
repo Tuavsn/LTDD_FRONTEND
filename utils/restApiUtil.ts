@@ -1,11 +1,10 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { API_SERVER_HOST, API_SERVER_PORT } from '@env'
 import { openRoutes } from "@/constants/ApiEndPoint";
 
-// const API_SERVER_HOST = '192.168.191.165'
-// const API_SERVER_PORT = '8082'
+const API_SERVER_HOST = process.env.EXPO_PUBLIC_API_SERVER_HOST || 'localhost'
+const API_SERVER_PORT = process.env.EXPO_PUBLIC_API_SERVER_PORT || '3001'
 
 const API_SERVER_URL = `http://${API_SERVER_HOST}:${API_SERVER_PORT}/api/v1`;
 

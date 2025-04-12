@@ -11,5 +11,6 @@ export const ApiEndPoint = {
 export const openRoutes = {
     AUTH: '/auth',
     CATEGORY: '/category',
-    PRODUCT: '/product'
+    PRODUCT: '/product',
+    DISCOUNT: '/discount',
 }

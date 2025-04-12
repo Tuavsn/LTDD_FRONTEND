@@ -61,3 +61,10 @@ export interface Order extends BaseModel {
     totalPrice: number;
     state: "new" | "accepted" | "pending" | "delivering" | "delivered" | "canceled";
 }
+
+export interface Discount extends BaseModel {
+    code: string;
+    percentage: number;
+    expiration_date: Date;
+    active: boolean;
+}

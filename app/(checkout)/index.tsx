@@ -1,87 +1,193 @@
-import { Cart } from "@/constants/Types";
+import { CartItem, Discount } from "@/constants/Types";
 import CartService from "@/service/cart.service";
+import OrderService from "@/service/order.service";
 import { api } from "@/utils/restApiUtil";
 import { useUserInfoStore } from "@/zustand/user.store";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { View, Text, FlatList, StyleSheet, SafeAreaView, Platform, StatusBar, Image, Alert } from "react-native";
+import { ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, StyleSheet, SafeAreaView, Platform, StatusBar, Image, Alert, BackHandler } from "react-native";
 import { Button, Card, TextInput, RadioButton } from "react-native-paper";
 
 const CheckoutScreen = () => {
   const cartStr = useLocalSearchParams().cartStr;
-  const cart = JSON.parse(cartStr?.toString() || "{}") as Cart;
+  const cartId = useLocalSearchParams().cartId;
+  const cartItems = (JSON.parse(cartStr?.toString() || "[]").length ? JSON.parse(cartStr?.toString() || "[]") : [JSON.parse(cartStr?.toString() || "[]")]) as CartItem[];
   const user = useUserInfoStore((state) => state.auth.user);
+  const [discountChechking, setDiscountChechking] = useState(false);
+  const [checkouting, setCheckouting] = useState(false);
+  const [discountError, setDiscountError] = useState<string | null>(null);
 
-  // Trạng thái cho thông tin giao hàng và phương thức thanh toán
   const [phone, setPhone] = useState(user?.phone || "");
   const [address, setAddress] = useState(user?.address.length ? (user.address.find(a => a.isPrimary)?.address) : "");
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [discountCode, setDiscountCode] = useState("");
+  const [discount, setDiscount] = useState<Discount | undefined>(undefined);
 
-  // Tính toán tổng số lượng và tổng giá
-  const totalQuantity = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-  const totalPrice = cart?.items?.reduce((sum, item) => sum + (item.product.price || 0) * item.quantity, 0) || 0;
+  const [isShippingInfoExpanded, setIsShippingInfoExpanded] = useState(true);
+  const [isPaymentExpanded, setIsPaymentExpanded] = useState(true);
+  const [isDiscountExpanded, setIsDiscountExpanded] = useState(true);
 
-  // Xử lý sự kiện thanh toán
-  const handleCheckout = async () => {
-    const checkoutData = { phone, address, paymentMethod };
+  const totalQuantity = cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  const totalPrice = cartItems?.reduce((sum, item) => sum + (item.product.price || 0) * item.quantity, 0) || 0;
 
-    // Gửi dữ liệu đến server
+  const checkDiscountCode = async () => {
+    setDiscountChechking(true);
     try {
-      const res = await CartService.checkout(address!, phone, paymentMethod);
-
-      if (res.cart) {
-        Alert.alert("Thành công", "Đơn hàng của bạn đã được ghi nhận. Cảm ơn bạn đã mua hàng!");
-        router.back();
+      const res = await api.post<Discount>('/discount/check', { code: discountCode });
+      if (res.success) {
+        setDiscountCode((prev) => prev.toUpperCase());
+        setDiscount(res.data);
+        setDiscountError(null);
+      } else {
+        setDiscountCode("");
+        setDiscountError(res.message);
+        setDiscount(undefined);
       }
+    } catch (error) {
+      Alert.alert("Lỗi", "Đã xảy ra lỗi khi kiểm tra mã giảm giá. Vui lòng thử lại sau!");
+      setDiscount(undefined);
+    } finally {
+      setDiscountChechking(false);
     }
-    catch (err: any) {
+  }
+
+  const handleCheckout = async () => {
+    setCheckouting(true);
+    if (!phone || !address) {
+      Alert.alert("Thông báo", "Vui lòng nhập đầy đủ thông tin giao hàng!");
+      setCheckouting(false);
+      return;
+    }
+    if (!paymentMethod) {
+      Alert.alert("Thông báo", "Vui lòng chọn phương thức thanh toán!");
+      setCheckouting(false);
+      return;
+    }
+
+    if (discount) {
+      await checkDiscountCode();
+    }
+
+    if (discountError) return;
+
+    try {
+      if (cartId) {
+        await CartService.checkoutCart(phone, address, paymentMethod, discountCode.toUpperCase());
+      }
+      else {
+        await OrderService.checkoutOrder(cartItems, address, phone, paymentMethod, discountCode.toUpperCase());
+      }
+      Alert.alert("Thông báo", "Đơn hàng đã được đăng lên thành công!");
+      handleCancel();
+    } catch (err: any) {
       Alert.alert("Lỗi", "Đã xảy ra lỗi khi thực hiện thanh toán. Vui lòng thử lại sau!");
     };
   };
 
+  const handleCancel = () => {
+    if (cartId) {
+      router.dismissTo('/(tabs)/cart');
+    } else {
+      router.back();
+    }
+  }
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      Alert.alert(
+        'Xác nhận',
+        'Bạn có chắc chắn muốn hủy thanh toán đơn hàng này không?',
+        [
+          { text: 'Hủy', style: 'cancel', onPress: () => null },
+          { text: 'Đồng ý', onPress: handleCancel }
+        ]
+      );
+      return true;
+    };
+    BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    };
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Tiêu đề chính */}
       <Text style={styles.title}>Thanh toán</Text>
 
-      {/* Phần thông tin nhận hàng */}
+      {/* Section Thông tin nhận hàng */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Thông tin nhận hàng</Text>
-        <View style={styles.infoContainer}>
-          <TextInput
-            mode="outlined"
-            label="Số điện thoại"
-            value={phone}
-            onChangeText={setPhone}
-            style={styles.input}
-          />
-          <TextInput
-            mode="outlined"
-            label="Địa chỉ"
-            value={address}
-            onChangeText={setAddress}
-            style={styles.input}
-          />
-        </View>
+        <TouchableOpacity onPress={() => setIsShippingInfoExpanded(!isShippingInfoExpanded)}>
+          <Text style={styles.sectionTitle}>
+            Thông tin nhận hàng {isShippingInfoExpanded ? "▲" : "▼"}
+          </Text>
+        </TouchableOpacity>
+        {isShippingInfoExpanded && (
+          <View style={styles.infoContainer}>
+            <TextInput
+              mode="outlined"
+              label="Số điện thoại"
+              value={phone}
+              onChangeText={setPhone}
+              style={styles.input}
+            />
+            <TextInput
+              mode="outlined"
+              label="Địa chỉ"
+              value={address}
+              onChangeText={setAddress}
+              style={styles.input}
+            />
+          </View>
+        )}
       </View>
 
-      {/* Phần phương thức thanh toán */}
+      {/* Section Phương thức thanh toán */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
-        <RadioButton.Group onValueChange={setPaymentMethod} value={paymentMethod}>
-          <View style={styles.radioButton}>
-            <RadioButton value="cash" />
-            <Text>Thanh toán khi nhận hàng</Text>
+        <TouchableOpacity onPress={() => setIsPaymentExpanded(!isPaymentExpanded)}>
+          <Text style={styles.sectionTitle}>
+            Phương thức thanh toán {isPaymentExpanded ? "▲" : "▼"}
+          </Text>
+        </TouchableOpacity>
+        {isPaymentExpanded && (
+          <RadioButton.Group onValueChange={setPaymentMethod} value={paymentMethod}>
+            <View style={styles.radioButton}>
+              <RadioButton value="cash" />
+              <Text>Thanh toán khi nhận hàng</Text>
+            </View>
+            <View style={styles.radioButton}>
+              <RadioButton value="card" disabled />
+              <Text style={{ opacity: 0.5 }}>Thẻ tín dụng</Text>
+            </View>
+          </RadioButton.Group>
+        )}
+      </View>
+
+      {/* Section Mã giảm giá */}
+      <View style={styles.section}>
+        <TouchableOpacity onPress={() => setIsDiscountExpanded(!isDiscountExpanded)}>
+          <Text style={styles.sectionTitle}>
+            Mã giảm giá {isDiscountExpanded ? "▲" : "▼"}
+          </Text>
+        </TouchableOpacity>
+        {isDiscountExpanded && (
+          <View style={styles.infoContainer}>
+            <TextInput
+              mode="outlined"
+              label="Nhập mã giảm giá"
+              onChangeText={setDiscountCode}
+              style={styles.input}
+              value={discountCode}
+            />
+            {discountError && <Text style={{ color: 'red', textAlign: 'center' }}>{discountError}</Text>}
+            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+              <Button mode="contained" onPress={checkDiscountCode} style={{ ...styles.button, backgroundColor: 'rgba(150,150,255,0.8)' }}>
+                {discountChechking ? <ActivityIndicator size={'small'} /> :
+                  <Text style={{ fontWeight: 'bold', color: '#333' }}>Áp dụng</Text>}
+              </Button>
+            </View>
           </View>
-          <View style={styles.radioButton}>
-            <RadioButton value="card" disabled />
-            <Text style={{ opacity: 0.5 }}>Thẻ tín dụng</Text>
-          </View>
-          {/* <View style={styles.radioButton}>
-            <RadioButton value="paypal" />
-            <Text>PayPal</Text>
-          </View> */}
-        </RadioButton.Group>
+        )}
       </View>
 
       {/* Tổng số lượng và tổng giá */}
@@ -90,12 +196,22 @@ const CheckoutScreen = () => {
         <Text style={[styles.summaryText, styles.totalPriceText]}>
           Tổng giá: {totalPrice.toLocaleString()} VND
         </Text>
+        {discount && (
+          <Text style={[styles.summaryText, styles.totalPriceText]}>
+            Giảm giá: {(totalPrice * discount.percentage / 100).toLocaleString()} VND
+          </Text>
+        )}
+        {discount && (
+          <Text style={[styles.summaryText, styles.totalPriceText]}>
+            Tổng thanh toán: {(totalPrice - (totalPrice * discount.percentage / 100 || 0)).toLocaleString()} VND
+          </Text>
+        )}
       </Card>
 
       {/* Danh sách sản phẩm */}
       <View style={{ flex: 1 }}>
         <FlatList
-          data={cart?.items || []}
+          data={cartItems || []}
           keyExtractor={(item) => item.product._id}
           renderItem={({ item }) => (
             <Card style={styles.itemCard}>
@@ -118,10 +234,13 @@ const CheckoutScreen = () => {
         />
       </View>
 
-      {/* Nút thanh toán */}
+      {/* Nút điều hướng */}
       <View style={styles.buttonContainer}>
-        <Button mode="contained" style={styles.button} onPress={handleCheckout}>
-          <Text style={styles.buttonText}>Thanh toán</Text>
+        <Button mode="contained" style={{ ...styles.button, backgroundColor: 'red' }} onPress={handleCancel} disabled={checkouting}>
+          <Text style={styles.buttonText}>Hủy</Text>
+        </Button>
+        <Button mode="contained" style={{ ...styles.button, backgroundColor: 'green' }} onPress={handleCheckout}>
+          {checkouting ? <ActivityIndicator size={'small'} /> : <Text style={styles.buttonText}>Thanh toán</Text>}
         </Button>
       </View>
     </SafeAreaView>
@@ -129,6 +248,18 @@ const CheckoutScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  inputBox: {
+    width: '80%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 30,
+    padding: 10,
+    paddingStart: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: "#F0F0F0",
@@ -207,18 +338,21 @@ const styles = StyleSheet.create({
   buttonContainer: {
     position: "absolute",
     bottom: 10,
-    width: "100%",
+    left: 0,
+    right: 0,
+    padding: 8,
+    paddingHorizontal: 24,
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
   },
   button: {
-    width: "60%",
-    padding: 8,
+    width: "40%",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
     borderRadius: 40,
-    backgroundColor: "#11EE11",
   },
   buttonText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#dfd",
   },

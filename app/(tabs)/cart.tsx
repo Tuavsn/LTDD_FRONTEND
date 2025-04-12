@@ -39,8 +39,7 @@ const CartScreen = () => {
   };
 
   const handleCheckout = () => {
-    console.log('cart', cart);
-    router.navigate({ pathname: '/(checkout)', params: { cartStr: JSON.stringify(cart) } })
+    router.navigate({ pathname: '/(checkout)', params: { cartStr: JSON.stringify(cart?.items || []), cartId: cart?._id } })
   };
 
   // Tự động refetch mỗi khi màn hình được focus

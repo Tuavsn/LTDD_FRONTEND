@@ -44,7 +44,7 @@ class ProductService {
 
     static async getProductById(productId: string): Promise<Product> {
         const url = `${ApiEndPoint.PRODUCT}/${productId}`;
-        const res = await api.get<Product>(url, { requiresAuth: true });
+        const res = await api.get<Product>(url);
         if (res.success) {
             return res.data!;
         } else {
