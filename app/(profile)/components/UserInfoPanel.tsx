@@ -1,8 +1,8 @@
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useState } from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getUserInfo } from '@/service/user.service';
 import { EditUserField } from '@/components';
 import { strings } from '@/constants/String';
-import React, { useState } from 'react'
 import { useUserInfoStore } from '@/zustand/user.store';
 import { useFocusEffect } from 'expo-router';
 import { DataTable } from 'react-native-paper';
@@ -20,7 +20,6 @@ const UserInfoPanel = () => {
   const [isAvatar, setIsAvatar] = useState(false);
   const [isPassword, setIsPassword] = useState(false);
   const [requireOldPassword, setRequireOldPassword] = useState(false);
-
 
   const handleEditField = (title: string, value: string) => {
     setInitialData(value);
@@ -43,14 +42,13 @@ const UserInfoPanel = () => {
         setFieldName('avatar');
         setIsAvatar(true);
         break;
-      default: // Password
-        setFieldName('password');
+      default: setFieldName('password');
         setRequireOldPassword(true);
         setIsPassword(true);
         break;
     }
     setIsEditing(true);
-  }
+  };
 
   const handleCancelEditting = () => {
     setIsEditing(false);
@@ -60,14 +58,13 @@ const UserInfoPanel = () => {
     setIsFullname(false);
     setIsAvatar(false);
     setIsPassword(false);
-  }
+  };
 
   return (
     <View>
-      {
-        isEditing
-        &&
-        (<EditUserField initialData={initialData}
+      {isEditing && (
+        <EditUserField
+          initialData={initialData}
           title={title}
           fieldName={fieldName}
           handleCancel={handleCancelEditting}
@@ -77,35 +74,48 @@ const UserInfoPanel = () => {
           isAvatar={isAvatar}
           isPassword={isPassword}
           requireOldPassword={requireOldPassword}
-        />)
-      }
+        />
+      )}
 
-
-      {/* Phần thông tin người dùng */}
-      <View className="mt-6">
-        {
-          [
-            { title: strings.editProfile.titles.email, value: user?.email },
-            { title: strings.editProfile.titles.phone, value: user?.phone },
-            { title: strings.editProfile.titles.fullname, value: user?.fullname },
-            { title: strings.editProfile.titles.password, value: '******' },
-          ].map((field, index) => (
-            <UserInfoField key={index} {...field} handleEditField={handleEditField} uniqueKey={index} />
-          ))
-        }
+      {/* User Info Section */}
+      <View style={styles.panelContainer}>
+        {[
+          { title: strings.editProfile.titles.email, value: user?.email },
+          { title: strings.editProfile.titles.phone, value: user?.phone },
+          { title: strings.editProfile.titles.fullname, value: user?.fullname },
+          { title: strings.editProfile.titles.password, value: '******' },
+        ].map((field, index) => (
+          <UserInfoField
+            key={index}
+            {...field}
+            handleEditField={handleEditField}
+            uniqueKey={index}
+          />
+        ))}
       </View>
     </View>
-  )
-}
+  );
+};
 
-const UserInfoField = ({ title, value, handleEditField, uniqueKey }:
-  { title: string, value: string, handleEditField: (title: string, value: string) => void, uniqueKey: number }) => {
+type UserInfoFieldProps = {
+  title: string;
+  value: string;
+  handleEditField: (title: string, value: string) => void;
+  uniqueKey: number;
+};
+
+const UserInfoField = ({
+  title,
+  value,
+  handleEditField,
+  uniqueKey,
+}: UserInfoFieldProps) => {
   return (
     <TouchableOpacity onPress={() => handleEditField(title, value)}>
-      <DataTable.Row className={`w-full flex justify-between px-4 border-0 pt-4 border-b-4 py-2 border-solid border-gray-300`}>
-        <DataTable.Cell className='flex-[0.5]'>{title}</DataTable.Cell>
-        <DataTable.Cell className='flex-1'>{value}</DataTable.Cell>
-        <DataTable.Cell className='flex-[0.2]'>
+      <DataTable.Row style={styles.dataTableRow}>
+        <DataTable.Cell style={styles.cellTitle}>{title}</DataTable.Cell>
+        <DataTable.Cell style={styles.cellValue}>{value}</DataTable.Cell>
+        <DataTable.Cell style={styles.cellIcon}>
           <Text>
             <Icon name="edit" size={20} color="blue" />
           </Text>
@@ -113,9 +123,28 @@ const UserInfoField = ({ title, value, handleEditField, uniqueKey }:
       </DataTable.Row>
     </TouchableOpacity>
   );
-}
+};
 
+export default UserInfoPanel;
 
-export default UserInfoPanel
-
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  panelContainer: {
+    marginTop: 24,
+  },
+  dataTableRow: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, borderBottomWidth: 4, borderStyle: 'solid',
+    borderColor: '#D1D5DB',
+  },
+  cellTitle: {
+    flex: 0.5,
+  },
+  cellValue: {
+    flex: 1,
+  },
+  cellIcon: {
+    flex: 0.2,
+  },
+});

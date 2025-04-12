@@ -1,13 +1,14 @@
+import { User } from "@/constants/Types"
 import { api } from "@/utils/restApiUtil"
-import { IUserInfo, useUserInfoStore } from "@/zustand/user.store"
+import { useUserInfoStore } from "@/zustand/user.store"
 
 
-export const getUserInfo = async (setUser: (user: Partial<IUserInfo>) => void) => {
-  const res = await api.get<{ user: Partial<IUserInfo> }>('/user/me', { requiresAuth: true })
+export const getUserInfo = async (setUser: (user: Partial<User>) => void) => {
+  const res = await api.get<{ user: Partial<User> }>('/user/me', { requiresAuth: true })
 
   if (res.success) {
-    setUser(res.data?.user ?? {} as IUserInfo)
+    setUser(res.data?.user ?? {} as User)
   }
 
-  return res.data || {} as IUserInfo
+  return res.data || {} as User
 }

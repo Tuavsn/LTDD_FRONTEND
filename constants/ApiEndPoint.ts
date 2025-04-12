@@ -7,3 +7,9 @@ export const ApiEndPoint = {
     CART: '/cart',
     NOTIFICATION: '/notification',
 }
+
+export const openRoutes = {
+    AUTH: '/auth',
+    CATEGORY: '/category',
+    PRODUCT: '/product'
+}

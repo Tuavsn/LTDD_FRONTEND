@@ -1,17 +1,24 @@
-import React, { useState } from 'react'
-import { Dimensions, ImageBackground, SafeAreaView, StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Dimensions,
+  ImageBackground,
+  SafeAreaView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { strings } from '@/constants/String';
 import { RelativePathString, router } from 'expo-router';
 import { useToast } from '@/components/SimpleToastProvider';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
 import { api } from '@/utils/restApiUtil';
-const background = require('@/assets/images/login-background.png')
+
+const background = require('@/assets/images/login-background.png');
 
 type ConfirmOTPScreenParams = {
   email: string;
   nextPathname: string;
-}
+};
 
 function ConfirmOTPScreen() {
   const { email, nextPathname } = useLocalSearchParams() as ConfirmOTPScreenParams;
@@ -23,15 +30,18 @@ function ConfirmOTPScreen() {
     api.post('/auth/verify-otp', { email, otp }).then((res) => {
       if (res.success) {
         showToast(strings.otpConfirm.texts.otpSuccess, 2000);
-        router.replace({ pathname: nextPathname as RelativePathString, params: { email } });
+        router.replace({
+          pathname: nextPathname as RelativePathString,
+          params: { email },
+        });
       } else {
         showToast(strings.otpConfirm.errors.error, 2000);
       }
-    })
-  }
+    });
+  };
+
   const handleResendOTP = () => {
     setTimer(60);
-
     api.post('/auth/resend-otp', { email }).then((res) => {
       showToast(res.message || strings.otpConfirm.errors.error, 2000);
     });
@@ -45,76 +55,109 @@ function ConfirmOTPScreen() {
         return prev - 1;
       });
     }, 1000);
-  }
+  };
 
   const handleCancel = () => {
     router.back();
-  }
+  };
 
   const OTPResend = () => {
     if (timer === 0) {
       return (
-        <Button
-          mode='text'
-          onPress={handleResendOTP}
-          className='focus:bg-slate-400'
-        >
+        <Button mode="text" onPress={handleResendOTP}>
           {strings.otpConfirm.texts.resendOTP}
         </Button>
-      )
+      );
     } else {
       return (
-        <Button
-          mode='text'
-          className='focus:bg-slate-400'
-        >
-          {strings.otpConfirm.texts.resendOTPIn} {timer} {strings.otpConfirm.texts.seconds}
+        <Button mode="text" disabled>
+          {strings.otpConfirm.texts.resendOTPIn} {timer}{' '}
+          {strings.otpConfirm.texts.seconds}
         </Button>
-      )
+      );
     }
-  }
+  };
 
   return (
-    <ImageBackground source={background}
-      className='flex-1 flex justify-center h-full w-full'>
-      <View className='flex-1 flex self-center w-full'>
-        <SafeAreaView className='flex flex-1 flex-col justify-center self-center p-5 w-[80%]'>
-          <View className='mb-4 flex content-center items-center bg-[rgba(255,255,255,0.8)] p-4 w-min'>
-            <Text className='text-[32px] font-bold w-min'>{strings.otpConfirm.labels.title}</Text>
+    <ImageBackground source={background} style={styles.background}>
+      <View style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          {/* Title */}
+          <View style={styles.titleBox}>
+            <Text style={styles.title}>{strings.otpConfirm.labels.title}</Text>
           </View>
-          <View className='mb-4'>
+
+          {/* OTP Input */}
+          <View style={styles.inputContainer}>
             <TextInput
               label={strings.otpConfirm.labels.otp}
               value={otp}
               onChangeText={setOtp}
-              mode='outlined'
-              keyboardType='decimal-pad'
+              mode="outlined"
+              keyboardType="decimal-pad"
             />
           </View>
-          <View>
-            <OTPResend />
-          </View>
 
-          <Button
-            mode='contained'
-            onPress={handleSubmitOTP}
-            className='mb-4 mt-2'
-          >
+          {/* Resend OTP */}
+          <View>{OTPResend()}</View>
+
+          {/* Submit Button */}
+          <Button mode="contained" onPress={handleSubmitOTP} style={styles.submitBtn}>
             {strings.otpConfirm.labels.confirm}
           </Button>
 
-          <Button
-            mode='text'
-            className='mt-2'
-            onPress={handleCancel}
-          >
+          {/* Cancel Button */}
+          <Button mode="text" onPress={handleCancel} style={styles.cancelBtn}>
             {strings.otpConfirm.texts.cancel}
           </Button>
-
         </SafeAreaView>
       </View>
     </ImageBackground>
-  )
+  );
 }
 
-export default ConfirmOTPScreen
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  container: {
+    flex: 1,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  safeArea: {
+    flex: 1,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    padding: 20,
+    width: '80%',
+  },
+  titleBox: {
+    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    padding: 16,
+    alignSelf: 'flex-start',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  submitBtn: {
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  cancelBtn: {
+    marginTop: 8,
+  },
+});
+
+export default ConfirmOTPScreen;

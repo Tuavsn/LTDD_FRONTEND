@@ -1,11 +1,12 @@
-import { useToast } from '@/components/SimpleToastProvider'
-import { strings } from '@/constants/String'
-import { api } from '@/utils/restApiUtil'
-import { router } from 'expo-router'
-import React, { useState } from 'react'
-import { ImageBackground, SafeAreaView, View } from 'react-native'
-import { Button, Text, TextInput } from 'react-native-paper'
-const background = require('@/assets/images/login-background.png')
+import React, { useState } from 'react';
+import { router } from 'expo-router';
+import { ImageBackground, SafeAreaView, StyleSheet, View } from 'react-native';
+import { Button, Text, TextInput } from 'react-native-paper';
+import { useToast } from '@/components/SimpleToastProvider';
+import { strings } from '@/constants/String';
+import { api } from '@/utils/restApiUtil';
+
+const background = require('@/assets/images/login-background.png');
 
 function ForgottPasswordScreen() {
   const { showToast } = useToast();
@@ -16,52 +17,103 @@ function ForgottPasswordScreen() {
       if (!res.success)
         showToast(res.message || strings.forgotPassword.errors.error, 2000);
       else
-        router.navigate({ pathname: '/(common)/confirm-otp', params: { email, nextPathname: "/(auth)/(forgot-password)/confirm-new-password" } });
+        router.navigate({
+          pathname: '/(common)/confirm-otp',
+          params: {
+            email,
+            nextPathname: "/(auth)/(forgot-password)/confirm-new-password",
+          },
+        });
     });
-  }
+  };
 
   const handleBackToLoginClick = () => {
     router.back();
-  }
+  };
 
   return (
-    <ImageBackground source={background}
-      className='flex-1 flex justify-center h-full w-full'>
-      <View className='flex-1 flex self-center w-full'>
-        <SafeAreaView className='flex flex-1 flex-col justify-center self-center p-5 w-[80%]'>
-          <View className='mb-4 flex content-center items-center bg-[rgba(255,255,255,0.8)] p-4 w-min'>
-            <Text className='text-[32px] font-bold w-min'>{strings.forgotPassword.labels.title}</Text>
+    <ImageBackground source={background} style={styles.background}>
+      <View style={styles.containerView}>
+        <SafeAreaView style={styles.safeArea}>
+          {/* Title Section */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>
+              {strings.forgotPassword.labels.title}
+            </Text>
           </View>
-          <View className='mb-4'>
+
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
             <TextInput
               label={strings.forgotPassword.labels.email}
               value={email}
               onChangeText={setEmail}
-              mode='outlined'
-              keyboardType='email-address'
+              mode="outlined"
+              keyboardType="email-address"
             />
           </View>
 
+          {/* Submit Button */}
           <Button
-            mode='contained'
+            mode="contained"
             onPress={handleSubmitEmail}
-            className='mb-4 mt-2'
+            style={styles.submitButton}
           >
             {strings.forgotPassword.labels.submit}
           </Button>
 
+          {/* Back Button */}
           <Button
-            mode='text'
-            className='mt-2'
+            mode="text"
             onPress={handleBackToLoginClick}
+            style={styles.backButton}
           >
             {strings.forgotPassword.texts.backToLogin}
           </Button>
-
         </SafeAreaView>
       </View>
     </ImageBackground>
-  )
+  );
 }
 
-export default ForgottPasswordScreen
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  containerView: {
+    flex: 1,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  safeArea: {
+    flex: 1,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    padding: 20, width: '80%',
+  },
+  titleContainer: {
+    marginBottom: 16, alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    padding: 16, alignSelf: 'flex-start',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  submitButton: {
+    marginTop: 8, marginBottom: 16,
+  },
+  backButton: {
+    marginTop: 8,
+  },
+});
+
+export default ForgottPasswordScreen;

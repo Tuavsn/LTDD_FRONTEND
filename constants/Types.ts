@@ -1,3 +1,5 @@
+import { OrderState } from "./Enum";
+
 export interface BaseModel {
     _id: string;
     createdAt: string;
@@ -48,4 +50,14 @@ export interface Cart extends BaseModel {
     items: CartItem[];
     user?: User;
     state?: "active" | "completed" | "cancelled" | "pending";
+}
+export interface Order extends BaseModel {
+    user?: User;
+    items: Product[];
+    items_count: number[];
+    phone: string;
+    address: string;
+    paymentMethod: string;
+    totalPrice: number;
+    state: "new" | "accepted" | "pending" | "delivering" | "delivered" | "canceled";
 }

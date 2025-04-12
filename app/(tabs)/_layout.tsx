@@ -31,14 +31,14 @@ export default function TabLayout() {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Entypo name="home" size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: any }) => <Entypo name="home" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="cart"
         options={{
           title: 'Cart',
-          tabBarIcon: ({ color }) => <Entypo name="shopping-cart" size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: any }) => <Entypo name="shopping-cart" size={24} color={color} />,
         }}
       />
     </Tabs>

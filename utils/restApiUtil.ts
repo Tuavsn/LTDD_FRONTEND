@@ -2,6 +2,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { API_SERVER_HOST, API_SERVER_PORT } from '@env'
+import { openRoutes } from "@/constants/ApiEndPoint";
+
+// const API_SERVER_HOST = '192.168.191.165'
+// const API_SERVER_PORT = '8082'
 
 const API_SERVER_URL = `http://${API_SERVER_HOST}:${API_SERVER_PORT}/api/v1`;
 
@@ -16,19 +20,21 @@ async function request<T>(
   endpoint: string,
   method: "GET" | "POST" | "PUT" | "DELETE",
   body?: any,
-  reqOptions: restApiOptions = { requiresAuth: false }
+  reqOptions: restApiOptions = {}
 ): Promise<ApiResponse<T>> {
 
   console.log(`${API_SERVER_URL}${endpoint}`)
 
   const token = await AsyncStorage.getItem("token");
 
-  let headers: HeadersInit = reqOptions.headers || {
+  let headers: HeadersInit = reqOptions?.headers || {
     "Content-Type": "application/json",
   };
 
+  const isOpenRoutes = Object.values(openRoutes).some(route => endpoint.startsWith(route));
 
-  if (reqOptions.requiresAuth && token) {
+
+  if (!isOpenRoutes && token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
@@ -44,7 +50,7 @@ async function request<T>(
     const response = await fetch(`${API_SERVER_URL}${endpoint}`, options);
 
     // Nếu token hết hạn, thử refresh
-    if (response.status === 401 && reqOptions.requiresAuth) {
+    if (response.status === 401 && !isOpenRoutes) {
       const newToken = await refreshToken();
       if (newToken) {
         return request<T>(endpoint, method, body, reqOptions); // Thử lại với token mới
@@ -52,7 +58,6 @@ async function request<T>(
     }
 
     const data = await response.json();
-    console.log("API Response:", response.status, data);
     return { success: response.ok, data, message: data?.message };
   } catch (error) {
     console.error("API Request Error:", error);
@@ -86,14 +91,13 @@ async function refreshToken(): Promise<string | null> {
 
 // Các hàm API cụ thể
 export const api = {
-  get: <T>(endpoint: string, options: restApiOptions = { requiresAuth: false }) => request<T>(endpoint, "GET", undefined, options),
-  post: <T>(endpoint: string, body: any, options: restApiOptions = { requiresAuth: false }) => request<T>(endpoint, "POST", body, options),
-  put: <T>(endpoint: string, body: any, options: restApiOptions = { requiresAuth: false }) => request<T>(endpoint, "PUT", body, options),
-  delete: <T>(endpoint: string, options: restApiOptions = { requiresAuth: false }) => request<T>(endpoint, "DELETE", undefined, options),
+  get: <T>(endpoint: string, options?: restApiOptions) => request<T>(endpoint, "GET", undefined, options),
+  post: <T>(endpoint: string, body: any, options?: restApiOptions) => request<T>(endpoint, "POST", body, options),
+  put: <T>(endpoint: string, body: any, options?: restApiOptions) => request<T>(endpoint, "PUT", body, options),
+  delete: <T>(endpoint: string, options?: restApiOptions) => request<T>(endpoint, "DELETE", undefined, options),
 };
 
 export type restApiOptions = {
-  requiresAuth: boolean;
   headers?: {
     [key: string]: string;
   }

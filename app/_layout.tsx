@@ -5,9 +5,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { NavigationContainer } from "@react-navigation/native";
 import { useColorScheme } from '@/hooks/useColorScheme';
-import "@/global.css";
+// import "@/global.css";
 import { ToastProvider } from '@/components/SimpleToastProvider';
 import 'react-native-url-polyfill/auto';
 
