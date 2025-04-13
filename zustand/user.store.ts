@@ -23,7 +23,6 @@ export const useUserInfoStore = create<{
   },
   setUserInfo: (newUserInfo: Partial<User>) =>
     set((state) => {
-      console.log('newUserInfo', newUserInfo);
       return ({ auth: { ...state.auth, user: { ...state.auth.user, ...newUserInfo } } });
     }),
   setToken: (token: string) =>

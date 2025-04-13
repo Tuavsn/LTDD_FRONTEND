@@ -7,14 +7,18 @@ import { api } from '@/utils/restApiUtil';
 import { strings } from '@/constants/String';
 import { useUserInfoStore } from '@/zustand/user.store';
 import { User } from '@/constants/Types';
+import { useSocketStore } from '@/zustand/socket.store';
+import { useToast } from '@/components/SimpleToastProvider';
 
 const LoginScreen = () => {
+  const initSocket = useSocketStore(state => state.initSocket);
   const router = useRouter();
   const [email, setEmail] = useState('vkq265@gmail.com');
   const [password, setPassword] = useState('qwerty');
   const [error, setError] = useState('');
   const auth = useUserInfoStore(state => state.auth);
   const setAuth = useUserInfoStore(state => state.setAuth);
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (auth.token) {
@@ -32,6 +36,7 @@ const LoginScreen = () => {
       if (res.success) {
         setAuth({ token: res.data?.token || '', user: res.data?.user || {} as User });
         AsyncStorage.setItem('token', res.data?.token || '');
+        initSocket(showToast, res.data?.user?._id || '');
       } else {
         if (res.data?.suggestEnterOtp) {
           router.navigate({ pathname: '/(common)/confirm-otp', params: { email } });

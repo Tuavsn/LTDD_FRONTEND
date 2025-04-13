@@ -5,6 +5,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
+    "notification": {
+      "color": "#000000",
+      "androidMode": "default",
+      "androidCollapsedTitle": "#{unread_notifications} new messages"
+    },
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,7 +20,9 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.myapp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -37,8 +44,7 @@
     "experiments": {
       "typedRoutes": true
     },
-    "extra": {
-      "API_URL": "http://192.168.1.109:8082/api/v1"
-    }
+    "extra": {},
+    "owner": "vkq265"
   }
 }

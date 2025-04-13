@@ -22,10 +22,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UserInfoPanel from './components/UserInfoPanel';
 import { BlurView } from 'expo-blur';
+import { useSocketStore } from '@/zustand/socket.store';
 
 const ProfileScreen = () => {
+  const auth = useUserInfoStore((state) => state.auth);
   const setAuth = useUserInfoStore((state) => state.setAuth);
   const setUserInfo = useUserInfoStore((state) => state.setUserInfo);
+  const disconnectSocket = useSocketStore((state) => state.disconnectSocket);
   const user = useUserInfoStore((state) => state.auth.user);
   const [isEditing, setIsEditing] = React.useState(false);
   const [initialData, setInitialData] = React.useState('');
@@ -61,6 +64,7 @@ const ProfileScreen = () => {
   const handleLogout = async () => {
     await AsyncStorage.removeItem('token');
     router.navigate({ pathname: '/(auth)/login' });
+    disconnectSocket(auth.user._id);
     setAuth({} as any);
   };
 

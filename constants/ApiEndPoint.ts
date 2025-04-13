@@ -6,6 +6,7 @@ export const ApiEndPoint = {
     ORDER: '/order',
     CART: '/cart',
     NOTIFICATION: '/notification',
+    DISCOUNT: '/discount',
     REVIEW: '/review'
 }
 
