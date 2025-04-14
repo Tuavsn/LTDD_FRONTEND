@@ -1,6 +1,13 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+
+google-services.json
+
 .env
 secret.ts
+secret-key.json
+/ios
+/android
 # dependencies
 node_modules/
 
