@@ -17,18 +17,18 @@ const OrderCard = ({ order, onPressDetails, onPressCancel }: OrderCardProps) => 
       <View style={styles.rowContainer}>
         {/* Left side: Order image */}
         <Card.Cover
-          source={{ uri: order.items[0].image[0].url }}
+          source={{ uri: order.items[0].product?.image[0].url }}
           style={styles.image}
         />
 
         {/* Right side: Order Information */}
         <View style={styles.infoContainer}>
           <Title style={styles.title}>
-            {maximizeString(order.items.reduce((acc, p, i) => acc + p.name + (i < order.items.length - 1 ? " + " : ""), ""), 20)}
+            {maximizeString(order.items.reduce((acc, item, i) => acc + item.product?.name + (i < order.items.length - 1 ? " + " : ""), ""), 20)}
           </Title>
 
           <View style={styles.detailsContainer}>
-            <Text style={styles.detailText}>Tổng cộng: ${order.totalPrice.toFixed(2)}</Text>
+            <Text style={styles.detailText}>Tổng cộng: {order.totalPrice.toLocaleString()} VND</Text>
           </View>
 
           <View style={styles.detailsContainer}>

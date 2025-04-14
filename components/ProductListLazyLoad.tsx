@@ -22,7 +22,7 @@ interface ProductListLazyLoadProps {
 const ProductListLazyLoad: React.FC<ProductListLazyLoadProps> = ({ ListHeaderComponent }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  
+
   // Mỗi lần load 10 sản phẩm
   const itemsPerPage = 100;
   const [page, setPage] = useState<number>(1);
@@ -97,10 +97,10 @@ const ProductListLazyLoad: React.FC<ProductListLazyLoadProps> = ({ ListHeaderCom
           <Text style={styles.priceValue}>
             {item.price.toLocaleString('vi-VN')}
           </Text>
-          <Text style={styles.priceCurrency}>đ</Text>
+          <Text style={styles.priceCurrency}> VND</Text>
         </Text>
         <View style={styles.infoRow}>
-          <Text style={styles.ratingText}>★ {item.rating}</Text>
+          <Text style={styles.ratingText}>★ {item.rating} - </Text>
           <Text style={styles.soldText}>Đã bán: {item.soldCount}</Text>
         </View>
         <Text style={styles.productCategory}>

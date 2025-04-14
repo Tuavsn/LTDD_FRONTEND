@@ -5,6 +5,7 @@ import { OrderState } from '@/constants/Enum';
 import OrderService from '@/service/order.service';
 import { Order } from '@/constants/Types';
 import OrderCard from './components/OrderCard';
+import { router } from 'expo-router';
 
 const OrderHistoryScreen = () => {
 
@@ -60,7 +61,7 @@ const OrderHistoryScreen = () => {
         data={displayOrders}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <OrderCard order={item} onPressCancel={() => handleCancelOrder(item._id)} onPressDetails={() => console.log(item)} />
+          <OrderCard order={item} onPressCancel={() => handleCancelOrder(item._id)} onPressDetails={() => router.navigate({ pathname: '/order-detail', params: { order: JSON.stringify(item) } })} />
         )}
         refreshControl={
           <RefreshControl

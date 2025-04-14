@@ -47,7 +47,7 @@ const BestSellingProducts: React.FC = () => {
           <Text style={styles.priceValue}>
             {item.price.toLocaleString('vi-VN')}
           </Text>
-          <Text style={styles.priceCurrency}>đ</Text>
+          <Text style={styles.priceCurrency}> VND</Text>
         </Text>
         {/* Row hiển thị rating và soldCount */}
         <View style={styles.infoRow}>

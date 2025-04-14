@@ -148,7 +148,7 @@ const ProductDetailScreen = () => {
       </Text>
       <View style={styles.inputContainer}>
         <Text style={{ color: '#EA1916' }}>
-          {formatNumberCommas(product.price * quantity)}đ
+          {formatNumberCommas(product.price * quantity)} VND
         </Text>
       </View>
       <View style={styles.buttonContainer}>
@@ -194,7 +194,7 @@ const ProductDetailScreen = () => {
       <View style={styles.infoContainer}>
         <Text style={styles.productName}>{product.name}</Text>
         <Text style={styles.productPrice}>
-          {product.price.toLocaleString('vi-VN')}đ
+          {product.price.toLocaleString('vi-VN')} NVD
         </Text>
         <Text style={styles.productDescription}>{product.description}</Text>
 

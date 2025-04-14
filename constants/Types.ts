@@ -35,9 +35,9 @@ export interface RatingCounts {
 
 export interface Review extends BaseModel {
     userId: {
-      _id: string;
-      name: string;
-      avatar?: string;
+        _id: string;
+        name: string;
+        avatar?: string;
     };
     productId: string;
     rating: number;
@@ -74,15 +74,20 @@ export interface Cart extends BaseModel {
     user?: User;
     state?: "active" | "completed" | "cancelled" | "pending";
 }
+
+export interface OrderItem {
+    product: Product;
+    quantity: number;
+}
 export interface Order extends BaseModel {
     user?: User;
-    items: Product[];
-    items_count: number[];
+    items: OrderItem[];
     phone: string;
     address: string;
     paymentMethod: string;
     totalPrice: number;
     state: "new" | "accepted" | "pending" | "delivering" | "delivered" | "canceled";
+    discount?: Discount;
 }
 
 export interface Discount extends BaseModel {

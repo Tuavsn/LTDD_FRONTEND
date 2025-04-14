@@ -81,6 +81,7 @@ const CheckoutScreen = () => {
       Alert.alert("Thông báo", "Đơn hàng đã được đăng lên thành công!");
       handleCancel();
     } catch (err: any) {
+      console.log(err);
       Alert.alert("Lỗi", "Đã xảy ra lỗi khi thực hiện thanh toán. Vui lòng thử lại sau!");
     };
   };
