@@ -5,6 +5,7 @@ import {
   Modal,
   TextInput
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { CartItem, Product } from '@/constants/Types';
 import ProductService from '@/service/product.service';
@@ -14,6 +15,8 @@ import ProductRating from '@/components/ProductRating';
 import { BlurView } from 'expo-blur';
 import { formatNumberCommas } from '@/utils/string.utils';
 
+const VIEWED_PRODUCTS_KEY = 'viewedProducts';
+
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
   const [product, setProduct] = useState<Product | null>(null);
@@ -21,10 +24,12 @@ const ProductDetailScreen = () => {
   const [loading, setLoading] = useState(true);
   const [openInputItemDetail, setOpenInputItemDetail] = useState(false);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [viewedProducts, setViewedProducts] = useState<Product[]>([]);
   const user = useUserInfoStore(state => state.auth.user);
   const router = useRouter();
-  const [next, setNext] = React.useState(Function);
+  const [next, setNext] = useState<() => void>(() => {});
 
+  // Lấy thông tin sản phẩm chi tiết
   useFocusEffect(
     useCallback(() => {
       const fetchProduct = async () => {
@@ -45,12 +50,13 @@ const ProductDetailScreen = () => {
     }, [productId])
   );
 
+  // Lấy danh sách sản phẩm tương tự
   useEffect(() => {
     const fetchSimilarProducts = async () => {
       try {
         if (productId) {
           const result = await ProductService.getSimilarProducts(productId as string);
-          setSimilarProducts(result);
+          setSimilarProducts(result.data);
         }
       } catch (error) {
         console.error('Error fetching similar products:', error);
@@ -60,6 +66,34 @@ const ProductDetailScreen = () => {
     fetchSimilarProducts();
   }, [productId]);
 
+  // Hàm cập nhật danh sách sản phẩm đã xem vào AsyncStorage
+  const updateViewedProducts = async (newProduct: Product) => {
+    try {
+      const stored = await AsyncStorage.getItem(VIEWED_PRODUCTS_KEY);
+      let products: Product[] = stored ? JSON.parse(stored) : [];
+      // Loại bỏ sản phẩm trùng lặp (nếu đã tồn tại)
+      products = products.filter(item => item._id !== newProduct._id);
+      // Thêm sản phẩm mới vào đầu mảng
+      products.unshift(newProduct);
+      // (Tuỳ chọn) Giới hạn số lượng sản phẩm đã xem (ví dụ: 10 sản phẩm)
+      if (products.length > 10) {
+        products = products.slice(0, 10);
+      }
+      await AsyncStorage.setItem(VIEWED_PRODUCTS_KEY, JSON.stringify(products));
+      setViewedProducts(products);
+    } catch (error) {
+      console.error("Error updating viewed products", error);
+    }
+  };
+
+  // Khi sản phẩm được load, lưu nó vào danh sách sản phẩm đã xem
+  useEffect(() => {
+    if (product) {
+      updateViewedProducts(product);
+    }
+  }, [product]);
+
+  // Hàm thêm sản phẩm vào giỏ hàng
   const handleAddToCart = async () => {
     try {
       await CartService.addItem(user._id, productId as string, quantity);
@@ -70,8 +104,8 @@ const ProductDetailScreen = () => {
     }
   };
 
+  // Hàm mua ngay (thêm sản phẩm vào giỏ hàng và chuyển sang màn hình thanh toán)
   const handleBuyNow = () => {
-
     let newCartItems: CartItem[] = [];
     const newCartItem: CartItem = {
       product: product as Product,
@@ -80,7 +114,7 @@ const ProductDetailScreen = () => {
     newCartItems.push(newCartItem);
 
     router.navigate({ pathname: '/(checkout)', params: { cartStr: JSON.stringify(newCartItem || []) } });
-  }
+  };
 
   if (loading) {
     return (
@@ -104,7 +138,6 @@ const ProductDetailScreen = () => {
     setQuantity(prev => prev + 1);
   };
 
-  // Hàm giảm số lượng (đảm bảo không giảm xuống dưới 0)
   const handleDecrease = () => {
     if (quantity > 0) {
       setQuantity(prev => prev - 1);
@@ -116,9 +149,9 @@ const ProductDetailScreen = () => {
       next();
     }
     setOpenInputItemDetail(false);
-  }
+  };
 
-  const ItemDetailInput = ({ }) => (
+  const ItemDetailInput = () => (
     <View style={styles.itemDetailContainer}>
       <View style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
         <TouchableOpacity onPress={() => setOpenInputItemDetail(false)} style={styles.button}>
@@ -143,9 +176,7 @@ const ProductDetailScreen = () => {
           <Text style={styles.buttonText}>+</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.title}>
-        Tổng tiền:
-      </Text>
+      <Text style={styles.title}>Tổng tiền:</Text>
       <View style={styles.inputContainer}>
         <Text style={{ color: '#EA1916' }}>
           {formatNumberCommas(product.price * quantity)}đ
@@ -157,16 +188,17 @@ const ProductDetailScreen = () => {
         </TouchableOpacity>
       </View>
     </View>
-  )
+  );
 
   const handleOpenInputItemDetailForBuyNow = () => {
     setNext(() => handleBuyNow);
     setOpenInputItemDetail(true);
-  }
+  };
+
   const handleOpenInputItemDetailForAddToCart = () => {
     setNext(() => handleAddToCart);
     setOpenInputItemDetail(true);
-  }
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -197,16 +229,13 @@ const ProductDetailScreen = () => {
           {product.price.toLocaleString('vi-VN')}đ
         </Text>
         <Text style={styles.productDescription}>{product.description}</Text>
-
         <View style={styles.statsRow}>
           <Text style={styles.rating}>★ {product.rating}</Text>
           <Text style={styles.sold}>Đã bán: {product.soldCount}</Text>
         </View>
-
         <TouchableOpacity style={styles.buyButton} onPress={handleOpenInputItemDetailForBuyNow}>
           <Text style={styles.buyButtonText}>Mua ngay</Text>
         </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.addToCartButton}
           onPress={handleOpenInputItemDetailForAddToCart}
@@ -215,12 +244,37 @@ const ProductDetailScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Similar products slider */}
+      {/* Danh sách sản phẩm tương tự */}
       {similarProducts.length > 0 && (
         <View style={styles.similarContainer}>
           <Text style={styles.similarTitle}>Sản phẩm tương tự</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {similarProducts.map((item) => (
+              <TouchableOpacity
+                key={item._id}
+                style={styles.similarItem}
+                onPress={() => router.push({ pathname: `/product-detail`, params: { productId: item._id } })}
+              >
+                <Image
+                  source={{ uri: item.image?.[0]?.url || '' }}
+                  style={styles.similarImage}
+                />
+                <Text numberOfLines={1} style={styles.similarName}>{item.name}</Text>
+                <Text style={styles.similarPrice}>
+                  {item.price.toLocaleString('vi-VN')}đ
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Danh sách sản phẩm đã xem */}
+      {viewedProducts.length > 0 && (
+        <View style={styles.similarContainer}>
+          <Text style={styles.similarTitle}>Sản phẩm đã xem</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {viewedProducts.map((item) => (
               <TouchableOpacity
                 key={item._id}
                 style={styles.similarItem}
@@ -247,7 +301,6 @@ const ProductDetailScreen = () => {
         totalReviews={product.reviewCount}
         ratingCounts={ratingCounts}
       />
-
     </ScrollView>
   );
 };
@@ -356,7 +409,6 @@ const styles = StyleSheet.create({
     color: '#EA1916',
     fontWeight: 'bold',
   },
-  // Container của modal bao phủ toàn màn hình với nền tối mờ.
   modalContainer: {
     flex: 1,
     display: 'flex',
@@ -366,7 +418,6 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%'
   },
-  // Style dùng cho BlurView phủ toàn màn hình.
   absolute: {
     position: 'absolute',
     top: 0,
@@ -374,7 +425,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
-  // Nội dung của modal (form chỉnh sửa).
   modalContent: {
     width: '96%',
     paddingHorizontal: 20,
@@ -404,7 +454,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', // hoặc space-between nếu muốn căn đều
+    justifyContent: 'center',
   },
   button: {
     backgroundColor: '#EEE',

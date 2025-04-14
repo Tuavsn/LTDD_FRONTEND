@@ -1,10 +1,4 @@
 // ProfileScreen.tsx
-import { EditUserField } from '@/components';
-import { strings } from '@/constants/String';
-import { getUserInfo } from '@/service/user.service';
-import { useUserInfoStore } from '@/zustand/user.store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router, useFocusEffect } from 'expo-router';
 import React from 'react';
 import {
   ActivityIndicator,
@@ -20,6 +14,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, useFocusEffect } from 'expo-router';
+import { EditUserField } from '@/components';
+import { strings } from '@/constants/String';
+import { getUserInfo } from '@/service/user.service';
+import { useUserInfoStore } from '@/zustand/user.store';
 import UserInfoPanel from './components/UserInfoPanel';
 import { BlurView } from 'expo-blur';
 
@@ -47,7 +47,7 @@ const ProfileScreen = () => {
   );
 
   const handleEditAvatarField = () => {
-    setInitialData(user.avatar ?? '');
+    setInitialData(user?.avatar ?? '');
     setTitle(strings.editProfile.titles.avatar);
     setFieldName('avatar');
     setIsAvatar(true);
@@ -92,7 +92,6 @@ const ProfileScreen = () => {
         onRequestClose={handleCancelEditting}
       >
         <View style={styles.modalContainer}>
-          {/* BlurView tạo hiệu ứng làm mờ cho nền */}
           <BlurView
             style={styles.absolute}
             intensity={80}
@@ -115,14 +114,12 @@ const ProfileScreen = () => {
         </View>
       </Modal>
 
-      {/* Cover image and avatar */}
+      {/* Cover Image & Avatar */}
       <View style={styles.coverContainer}>
-        {/* Cover Image */}
         <Image
           source={require('@/assets/images/login-background.png')}
           style={styles.coverImage}
         />
-        {/* Avatar placed over the cover */}
         <View style={styles.avatarContainer}>
           <TouchableOpacity onPress={handleEditAvatarField}>
             {isLoading ? (
@@ -131,8 +128,7 @@ const ProfileScreen = () => {
               <Image
                 source={{
                   uri:
-                    user?.avatar ||
-                    'https://via.placeholder.com/150',
+                    user?.avatar || 'https://via.placeholder.com/150',
                 }}
                 style={[
                   { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 },
@@ -146,14 +142,11 @@ const ProfileScreen = () => {
 
       {/* User Profile Panel */}
       <View style={[styles.panel, styles.profilePanel]}>
-        <TouchableOpacity onPress={() => setShowProfile(!showProfile)}>
+        <TouchableOpacity style={styles.panelButton} onPress={() => setShowProfile(!showProfile)}>
           <View style={styles.panelHeader}>
+            <Icon name="user" size={22} color="#333" style={styles.panelIcon} />
             <Text style={styles.panelTitle}>Tài khoản</Text>
-            <Icon
-              name={showProfile ? 'angle-up' : 'angle-down'}
-              size={24}
-              color="black"
-            />
+            <Icon name={showProfile ? 'angle-up' : 'angle-down'} size={24} color="#333" />
           </View>
         </TouchableOpacity>
         {showProfile && (
@@ -172,11 +165,12 @@ const ProfileScreen = () => {
       </View>
 
       {/* Order History Navigation Panel */}
-      <View style={styles.panel}>
-        <TouchableOpacity onPress={handleNavigateToOrderHistory}>
+      <View style={[styles.panel, styles.orderPanel]}>
+        <TouchableOpacity style={styles.panelButton} onPress={handleNavigateToOrderHistory}>
           <View style={styles.panelHeader}>
+            <Icon name="shopping-cart" size={22} color="#333" style={styles.panelIcon} />
             <Text style={styles.panelTitle}>Đơn hàng</Text>
-            <Icon name="angle-right" size={24} color="black" />
+            <Icon name="angle-right" size={24} color="#333" />
           </View>
         </TouchableOpacity>
       </View>
@@ -184,6 +178,7 @@ const ProfileScreen = () => {
       {/* Logout Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={handleLogout}>
+          <Icon name="sign-out" size={20} color="#fff" style={styles.buttonIcon} />
           <Text style={styles.buttonText}>Đăng xuất</Text>
         </TouchableOpacity>
       </View>
@@ -192,24 +187,20 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  // Container cho toàn bộ màn hình.
   container: {
     flex: 1,
     backgroundColor: 'white',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  // Container cho cover image và avatar.
   coverContainer: {
     position: 'relative',
     backgroundColor: 'black',
   },
-  // Cover image: full width, height cố định, áp dụng opacity.
   coverImage: {
     width: '100%',
     height: 320,
     opacity: 0.7,
   },
-  // Container cho avatar, được đặt nằm giữa cover image.
   avatarContainer: {
     position: 'absolute',
     top: 0,
@@ -219,83 +210,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Avatar image với border để nổi bật.
   avatarImage: {
     borderWidth: 4,
     borderColor: 'white',
   },
-  // Container cho các panel (tài khoản, đơn hàng).
   panel: {
-    width: '100%',
-    paddingTop: 16,
-    paddingBottom: 8,
-    paddingHorizontal: 16,
-    backgroundColor: 'white',
+    width: '90%',
+    alignSelf: 'center',
+    backgroundColor: '#f7f7f7',
+    marginVertical: 12,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
-  // Panel đầu tiên có thêm đường viền dưới.
-  profilePanel: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'gray',
+  panelButton: {
+    paddingVertical: 8,
   },
-  // Header cho mỗi panel.
   panelHeader: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
-  // Tiêu đề của panel.
-  panelTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  panelIcon: {
+    marginRight: 8,
   },
-  // Container cho nút logout, căn giữa.
+  panelTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+  },
   buttonContainer: {
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 24,
   },
-  // Styling cho nút logout.
   button: {
     width: '50%',
-    marginTop: 24,
+    flexDirection: 'row',
     backgroundColor: '#dd2233',
     padding: 16,
-    borderRadius: 9999,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  // Text của nút logout.
+  buttonIcon: {
+    marginRight: 8,
+  },
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: 16,
   },
-  // Container của modal bao phủ toàn màn hình với nền tối mờ.
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    height: '100%',
-    width: '100%',
   },
-  // Style dùng cho BlurView phủ toàn màn hình.
   absolute: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
+    ...StyleSheet.absoluteFillObject,
   },
-  // Nội dung của modal (form chỉnh sửa).
   modalContent: {
     width: '80%',
     padding: 20,
     backgroundColor: '#fff',
     borderRadius: 10,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    alignItems: 'center',
   },
 });
 

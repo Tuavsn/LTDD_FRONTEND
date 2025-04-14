@@ -28,7 +28,7 @@ const OrderCard = ({ order, onPressDetails, onPressCancel }: OrderCardProps) => 
           </Title>
 
           <View style={styles.detailsContainer}>
-            <Text style={styles.detailText}>Tổng cộng: ${order.totalPrice.toFixed(2)}</Text>
+            <Text style={styles.detailText}>Tổng cộng: {order.totalPrice.toLocaleString()} đ</Text>
           </View>
 
           <View style={styles.detailsContainer}>
