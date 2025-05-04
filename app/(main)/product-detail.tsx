@@ -50,7 +50,7 @@ const ProductDetailScreen = () => {
       try {
         if (productId) {
           const result = await ProductService.getSimilarProducts(productId as string);
-          setSimilarProducts(result);
+          setSimilarProducts(result.data);
         }
       } catch (error) {
         console.error('Error fetching similar products:', error);
@@ -71,7 +71,6 @@ const ProductDetailScreen = () => {
   };
 
   const handleBuyNow = () => {
-
     let newCartItems: CartItem[] = [];
     const newCartItem: CartItem = {
       product: product as Product,
@@ -240,12 +239,13 @@ const ProductDetailScreen = () => {
         </View>
       )}
 
-      {/* Product Rating */}
+      {/* Product Rating - Chỉ hiển thị đánh giá, không có nút viết đánh giá */}
       <ProductRating
         productId={productId as string}
         averageRating={product.rating}
         totalReviews={product.reviewCount}
         ratingCounts={ratingCounts}
+        showReviewButton={false}
       />
 
     </ScrollView>

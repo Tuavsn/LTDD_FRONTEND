@@ -1,5 +1,5 @@
 // screens/OrderDetailScreen.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,17 +10,95 @@ import {
   StatusBar,
   Image,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { Order, Product } from '@/constants/Types';
 import { Ionicons } from '@expo/vector-icons';
+import ProductService from '@/service/product.service';
+import { useUserInfoStore } from '@/zustand/user.store';
+
+interface ProductWithReviewStatus extends Product {
+  hasReviewed?: boolean;
+}
+
+interface OrderItem {
+  product: ProductWithReviewStatus;
+  quantity: number;
+}
 
 const OrderDetailScreen = () => {
   // Lấy dữ liệu đơn hàng từ params, chuyển chuỗi JSON về đối tượng Order
   const order = JSON.parse(useLocalSearchParams().order as string) as Order;
   const navigation = useNavigation();
+  const router = useRouter();
+  const user = useUserInfoStore(state => state.auth.user);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const renderItem = ({ item }: { item: { product: Product, quantity: number } }) => (
+  // Add a ref to track if we've already checked review status to prevent infinite loops
+  const [reviewsChecked, setReviewsChecked] = useState(false);
+
+  useEffect(() => {
+    if (!order || !user || reviewsChecked) return;
+    
+    const checkReviewStatus = async () => {
+      setLoading(true);
+      try {
+        // Create a copy of order items to update
+        const updatedItems = [...order.items];
+        
+        // Check review status for each product
+        for (let i = 0; i < updatedItems.length; i++) {
+          const item = updatedItems[i];
+          const hasReviewed = await ProductService.hasUserReviewedProduct(
+            user._id,
+            item.product._id
+          );
+          
+          // Update the product with review status
+          item.product = {
+            ...item.product,
+            hasReviewed
+          };
+        }
+        
+        setOrderItems(updatedItems);
+        // Mark that we've already checked reviews to prevent re-running
+        setReviewsChecked(true);
+      } catch (error) {
+        console.error('Error checking review status:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkReviewStatus();
+  }, [order, user, reviewsChecked]); // Add reviewsChecked as a dependency
+
+  const navigateToWriteReview = (productId: string) => {
+    if (!user) {
+      Alert.alert(
+        'Đăng nhập',
+        'Vui lòng đăng nhập để đánh giá sản phẩm.',
+        [
+          { text: 'Hủy', style: 'cancel' },
+          { 
+            text: 'Đăng nhập', 
+            onPress: () => router.push('/(auth)/login')
+          }
+        ]
+      );
+      return;
+    }
+    
+    router.push({
+      pathname: '/(review)/product-review',
+      params: { productId }
+    });
+  };
+
+  const renderItem = ({ item }: { item: OrderItem }) => (
     <View style={styles.itemContainer}>
       {/* Hiển thị hình sản phẩm */}
       <Image
@@ -35,6 +113,23 @@ const OrderDetailScreen = () => {
         </View>
         <Text style={styles.itemText}>Số lượng: {item.quantity}</Text>
         <Text style={styles.itemText}>Đơn giá: {item.product.price.toLocaleString()} VND</Text>
+        
+        {/* Nút đánh giá sản phẩm */}
+        <TouchableOpacity 
+          style={[
+            styles.rateButton,
+            item.product.hasReviewed ? styles.disabledButton : {}
+          ]}
+          onPress={() => navigateToWriteReview(item.product._id)}
+          disabled={item.product.hasReviewed}
+        >
+          <Text style={[styles.rateButtonText, item.product.hasReviewed ? styles.disabledButtonText : {}]}>
+            {item.product.hasReviewed ? 'Đã đánh giá' : 'Đánh giá sản phẩm'}
+          </Text>
+          {!item.product.hasReviewed && (
+            <Ionicons name="star" size={16} color="#fff" style={{ marginLeft: 4 }} />
+          )}
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -52,7 +147,7 @@ const OrderDetailScreen = () => {
       </View>
       <FlatList
         contentContainerStyle={styles.contentContainer}
-        data={order.items}
+        data={loading ? [] : (orderItems.length > 0 ? orderItems : order.items)}
         keyExtractor={(item) => item.product._id}
         renderItem={renderItem}
         ListFooterComponent={
@@ -136,7 +231,7 @@ const styles = StyleSheet.create({
   },
   itemDetails: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   itemHeader: {
     flexDirection: 'row',
@@ -179,5 +274,29 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 4,
+  },
+  rateButton: {
+    flexDirection: 'row',
+    backgroundColor: '#EA1916',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  rateButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  disabledButtonText: {
+    color: '#999',
   },
 });

@@ -30,6 +30,7 @@ interface ProductRatingProps {
   productId: string;
   averageRating: number;
   totalReviews: number;
+  showReviewButton?: boolean; // Added prop to control whether to show review button
   ratingCounts?: {
     5: number;
     4: number;
@@ -39,7 +40,7 @@ interface ProductRatingProps {
   };
 }
 
-const ProductRating = ({ productId, averageRating, totalReviews, ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } }: ProductRatingProps) => {
+const ProductRating = ({ productId, averageRating, totalReviews, showReviewButton = false, ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } }: ProductRatingProps) => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -93,7 +94,9 @@ const ProductRating = ({ productId, averageRating, totalReviews, ratingCounts = 
     loadReviews({ page: 1, limit: 10, rating: selectedRating });
     
     // Check if user has already reviewed
-    checkUserReview();
+    if (showReviewButton) {
+      checkUserReview();
+    }
     
     // Load rating statistics
     const loadRatingStats = async () => {
@@ -109,7 +112,7 @@ const ProductRating = ({ productId, averageRating, totalReviews, ratingCounts = 
     };
     
     loadRatingStats();
-  }, [productId, user]);
+  }, [productId, user, showReviewButton]);
 
   useEffect(() => {
     // Reset page and reload reviews when rating filter changes
@@ -347,17 +350,20 @@ const ProductRating = ({ productId, averageRating, totalReviews, ratingCounts = 
         </Text>
       )}
       
-      <TouchableOpacity 
-        style={[
-          styles.writeReviewButton,
-          hasReviewed ? styles.disabledButton : null
-        ]}
-        onPress={navigateToWriteReview}
-      >
-        <Text style={styles.writeReviewText}>
-          {hasReviewed ? 'Bạn đã đánh giá' : 'Viết đánh giá'}
-        </Text>
-      </TouchableOpacity>
+      {/* Chỉ hiển thị nút đánh giá khi showReviewButton là true */}
+      {showReviewButton && (
+        <TouchableOpacity 
+          style={[
+            styles.writeReviewButton,
+            hasReviewed ? styles.disabledButton : null
+          ]}
+          onPress={navigateToWriteReview}
+        >
+          <Text style={styles.writeReviewText}>
+            {hasReviewed ? 'Bạn đã đánh giá' : 'Viết đánh giá'}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -411,38 +417,40 @@ const styles = StyleSheet.create({
   ratingBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 2,
+    marginBottom: 5,
   },
   ratingNumber: {
-    width: 12,
-    fontSize: 12,
-    color: '#666',
+    fontSize: 14,
+    fontWeight: 'bold',
+    width: 20,
   },
   progressBarBackground: {
+    flex: 1,
     height: 8,
     backgroundColor: '#eee',
     borderRadius: 4,
-    flex: 1,
     marginHorizontal: 8,
+    overflow: 'hidden',
   },
   progressBarFill: {
-    height: 8,
+    height: '100%',
     backgroundColor: '#FFB80A',
     borderRadius: 4,
   },
   ratingCount: {
     fontSize: 12,
     color: '#666',
-    width: 24,
+    width: 30,
     textAlign: 'right',
   },
   filterIndicator: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 10,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
     marginBottom: 10,
   },
   filterText: {
@@ -452,14 +460,14 @@ const styles = StyleSheet.create({
   clearFilter: {
     fontSize: 14,
     color: '#EA1916',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   loadingContainer: {
-    padding: 20,
+    padding: 30,
     alignItems: 'center',
   },
   loadingMoreContainer: {
-    padding: 10,
+    padding: 16,
     alignItems: 'center',
   },
   reviewItem: {
@@ -471,37 +479,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
-    alignItems: 'center',
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
   userAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     marginRight: 10,
   },
   defaultAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
   },
   avatarText: {
-    color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+    color: '#fff',
   },
   userName: {
-    fontWeight: '600',
     fontSize: 14,
-    color: '#333',
+    fontWeight: 'bold',
   },
   reviewRating: {
     flexDirection: 'row',
@@ -513,9 +518,12 @@ const styles = StyleSheet.create({
     color: '#999',
     marginLeft: 8,
   },
+  deleteButton: {
+    padding: 5,
+  },
   reviewComment: {
     fontSize: 14,
-    color: '#333',
+    color: '#444',
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -530,38 +538,37 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8,
   },
-  seeMoreButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  seeMoreText: {
-    color: '#EA1916',
-    fontWeight: '600',
-  },
-  writeReviewButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#EA1916',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  writeReviewText: {
-    color: '#EA1916',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  deleteButton: {
-    padding: 8,
-  },
-  disabledButton: {
-    borderColor: '#999',
-  },
   noReviews: {
     textAlign: 'center',
-    padding: 16,
+    fontSize: 14,
     color: '#666',
+    padding: 20,
+  },
+  seeMoreButton: {
+    backgroundColor: '#f5f5f5',
+    padding: 12,
+    borderRadius: 6,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  seeMoreText: {
+    color: '#333',
+    fontWeight: '500',
+  },
+  writeReviewButton: {
+    backgroundColor: '#EA1916',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
+  },
+  writeReviewText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   }
 });
 
