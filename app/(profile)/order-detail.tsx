@@ -41,13 +41,13 @@ const OrderDetailScreen = () => {
 
   useEffect(() => {
     if (!order || !user || reviewsChecked) return;
-    
+
     const checkReviewStatus = async () => {
       setLoading(true);
       try {
         // Create a copy of order items to update
         const updatedItems = [...order.items];
-        
+
         // Check review status for each product
         for (let i = 0; i < updatedItems.length; i++) {
           const item = updatedItems[i];
@@ -55,14 +55,14 @@ const OrderDetailScreen = () => {
             user._id,
             item.product._id
           );
-          
+
           // Update the product with review status
           item.product = {
             ...item.product,
             hasReviewed
           };
         }
-        
+
         setOrderItems(updatedItems);
         // Mark that we've already checked reviews to prevent re-running
         setReviewsChecked(true);
@@ -72,7 +72,7 @@ const OrderDetailScreen = () => {
         setLoading(false);
       }
     };
-    
+
     checkReviewStatus();
   }, [order, user, reviewsChecked]); // Add reviewsChecked as a dependency
 
@@ -83,15 +83,15 @@ const OrderDetailScreen = () => {
         'Vui lòng đăng nhập để đánh giá sản phẩm.',
         [
           { text: 'Hủy', style: 'cancel' },
-          { 
-            text: 'Đăng nhập', 
+          {
+            text: 'Đăng nhập',
             onPress: () => router.push('/(auth)/login')
           }
         ]
       );
       return;
     }
-    
+
     router.push({
       pathname: '/(review)/product-review',
       params: { productId }
@@ -113,9 +113,9 @@ const OrderDetailScreen = () => {
         </View>
         <Text style={styles.itemText}>Số lượng: {item.quantity}</Text>
         <Text style={styles.itemText}>Đơn giá: {item.product.price.toLocaleString()} VND</Text>
-        
+
         {/* Nút đánh giá sản phẩm */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
             styles.rateButton,
             item.product.hasReviewed ? styles.disabledButton : {}
@@ -144,6 +144,7 @@ const OrderDetailScreen = () => {
         </TouchableOpacity>
         <Text style={styles.title}>Chi tiết đơn hàng</Text>
         <Text style={styles.subtitle}>Mã đơn hàng: {order._id}</Text>
+        <Text style={styles.subtitle}>Địa chỉ giao nhận: {order.address}</Text>
       </View>
       <FlatList
         contentContainerStyle={styles.contentContainer}

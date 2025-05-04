@@ -55,18 +55,18 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
   const loadReviews = async (options: { page: number, limit: number, rating: number | null }) => {
     try {
       options.page === 1 ? setLoading(true) : setLoadingMore(true);
-      
+
       const result: PaginatedReviewResult = await ProductService.getProductReviews(
         productId,
         options
       );
-      
+
       if (options.page === 1) {
         setReviews(result.reviews);
       } else {
         setReviews(prev => [...prev, ...result.reviews]);
       }
-      
+
       setHasMorePages(result.currentPage < result.totalPages);
       setTotalReviewCount(result.total);
     } catch (error) {
@@ -92,12 +92,12 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
   useEffect(() => {
     // Load initial data
     loadReviews({ page: 1, limit: 10, rating: selectedRating });
-    
+
     // Check if user has already reviewed
     if (showReviewButton) {
       checkUserReview();
     }
-    
+
     // Load rating statistics
     const loadRatingStats = async () => {
       try {
@@ -110,7 +110,7 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
         console.error('Error loading rating stats:', error);
       }
     };
-    
+
     loadRatingStats();
   }, [productId, user, showReviewButton]);
 
@@ -135,17 +135,17 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
       setSelectedRating(rating);
     }
   };
-  
+
   const deleteReview = async (reviewId: string) => {
     if (!user) return;
-    
+
     Alert.alert(
       'Xác nhận xóa',
       'Bạn có chắc chắn muốn xóa đánh giá này không?',
       [
         { text: 'Hủy', style: 'cancel' },
-        { 
-          text: 'Xóa', 
+        {
+          text: 'Xóa',
           style: 'destructive',
           onPress: async () => {
             try {
@@ -153,11 +153,11 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
               // Reload reviews after deletion
               loadReviews({ page: 1, limit: 10, rating: selectedRating });
               setHasReviewed(false);
-              
+
               // Refresh product rating stats
               const stats = await ProductService.getProductRatingStats(productId);
               ratingCounts = stats.ratingCounts;
-              
+
               Alert.alert('Thành công', 'Đã xóa đánh giá.');
             } catch (error) {
               console.error('Error deleting review:', error);
@@ -172,7 +172,7 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
   const calculatePercentage = (count: number) => {
     if (totalReviewCount === 0) return 0;
     return Math.min((count / totalReviewCount) * 100, 100);
-  };  
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -183,11 +183,11 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       stars.push(
-        <AntDesign 
-          key={i} 
-          name={i <= rating ? "star" : "staro"} 
-          size={16} 
-          color={i <= rating ? "#FFB80A" : "#ccc"} 
+        <AntDesign
+          key={i}
+          name={i <= rating ? "star" : "staro"}
+          size={16}
+          color={i <= rating ? "#FFB80A" : "#ccc"}
           style={{ marginRight: 2 }}
         />
       );
@@ -197,21 +197,21 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
 
   const renderRatingBar = (rating: number, count: number) => {
     const percentage = calculatePercentage(count);
-    
+
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.ratingBarContainer}
         onPress={() => filterReviewsByRating(rating)}
       >
         <Text style={styles.ratingNumber}>{rating}</Text>
         <AntDesign name="star" size={14} color="#FFB80A" />
         <View style={styles.progressBarBackground}>
-          <View 
+          <View
             style={[
-              styles.progressBarFill, 
+              styles.progressBarFill,
               { width: `${percentage}%` },
               selectedRating === rating ? { backgroundColor: '#EA1916' } : {}
-            ]} 
+            ]}
           />
         </View>
         <Text style={styles.ratingCount}>{count}</Text>
@@ -221,7 +221,7 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
 
   const renderReviewItem = (review: Review) => {
     const isOwnReview = user && review.userId._id === user._id;
-    
+
     return (
       <View style={styles.reviewItem} key={review._id}>
         <View style={styles.reviewHeader}>
@@ -241,9 +241,9 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
               </View>
             </View>
           </View>
-          
+
           {isOwnReview && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => deleteReview(review._id)}
             >
@@ -255,7 +255,7 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
         {review.images && review.images.length > 0 && (
           <View style={styles.reviewImages}>
             {review.images.map((image, index) => (
-              <Image key={index} source={{ uri: image.url }} style={styles.reviewImage} />
+              <Image key={'' + review._id + '-' + index} source={{ uri: image.url }} style={styles.reviewImage} />
             ))}
           </View>
         )}
@@ -270,20 +270,20 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
         'Vui lòng đăng nhập để đánh giá sản phẩm.',
         [
           { text: 'Hủy', style: 'cancel' },
-          { 
-            text: 'Đăng nhập', 
+          {
+            text: 'Đăng nhập',
             onPress: () => router.push('/(auth)/login')
           }
         ]
       );
       return;
     }
-    
+
     if (hasReviewed) {
       Alert.alert('Thông báo', 'Bạn đã đánh giá sản phẩm này rồi.');
       return;
     }
-    
+
     router.push({
       pathname: '/(review)/product-review',
       params: { productId }
@@ -293,7 +293,7 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Đánh giá & Nhận xét</Text>
-      
+
       <View style={styles.ratingOverview}>
         <View style={styles.averageRatingContainer}>
           <Text style={styles.averageRating}>{averageRating.toFixed(1)}</Text>
@@ -302,7 +302,7 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
             <Text style={styles.totalReviews}>{totalReviewCount} đánh giá</Text>
           </View>
         </View>
-        
+
         <View style={styles.ratingBars}>
           {[5, 4, 3, 2, 1].map(rating => (
             renderRatingBar(rating, ratingCounts[rating as keyof typeof ratingCounts] || 0)
@@ -318,7 +318,7 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
           </TouchableOpacity>
         </View>
       )}
-      
+
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#EA1916" />
@@ -326,15 +326,15 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
       ) : reviews.length > 0 ? (
         <>
           {reviews.map(review => renderReviewItem(review))}
-          
+
           {loadingMore && (
             <View style={styles.loadingMoreContainer}>
               <ActivityIndicator size="small" color="#EA1916" />
             </View>
           )}
-          
+
           {hasMorePages && !loadingMore && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.seeMoreButton}
               onPress={handleLoadMore}
             >
@@ -344,15 +344,15 @@ const ProductRating = ({ productId, averageRating, totalReviews, showReviewButto
         </>
       ) : (
         <Text style={styles.noReviews}>
-          {selectedRating 
-            ? `Không có đánh giá ${selectedRating} sao nào.` 
+          {selectedRating
+            ? `Không có đánh giá ${selectedRating} sao nào.`
             : 'Chưa có đánh giá nào cho sản phẩm này.'}
         </Text>
       )}
-      
+
       {/* Chỉ hiển thị nút đánh giá khi showReviewButton là true */}
       {showReviewButton && (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
             styles.writeReviewButton,
             hasReviewed ? styles.disabledButton : null
